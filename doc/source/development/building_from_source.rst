@@ -1,5 +1,3 @@
-.. include:: ../substitutions.rst
-
 .. _building_from_source:
 
 ================================================================================
@@ -60,6 +58,9 @@ Alternatively, a custom prefix can be specified:
 .. code-block:: bash
 
     cmake -DCMAKE_PREFIX_PATH=/opt/SQLite ..
+
+It is strongly recommended (and sometimes compulsory) to specify paths on Windows
+using forward slashes as well, e.g.: ``c:/path/to/include``.
 
 You can unset existing cached variables, by using the -U switch of cmake, for example with wildcards:
 

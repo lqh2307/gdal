@@ -441,13 +441,22 @@ int IMapInfoFile::GetTABType(const OGRFieldDefn *poField,
 {
     TABFieldType eTABType;
     int nWidth = poField->GetWidth();
-    int nPrecision = poField->GetPrecision();
+    int nPrecision =
+        poField->GetType() == OFTReal ? poField->GetPrecision() : 0;
 
     if (poField->GetType() == OFTInteger)
     {
-        eTABType = TABFInteger;
-        if (nWidth == 0)
-            nWidth = 12;
+        if (poField->GetSubType() == OFSTBoolean)
+        {
+            eTABType = TABFLogical;
+            nWidth = 1;
+        }
+        else
+        {
+            eTABType = TABFInteger;
+            if (nWidth == 0)
+                nWidth = 12;
+        }
     }
     else if (poField->GetType() == OFTInteger64)
     {
@@ -519,9 +528,12 @@ int IMapInfoFile::GetTABType(const OGRFieldDefn *poField,
         return -1;
     }
 
-    *peTABType = eTABType;
-    *pnWidth = nWidth;
-    *pnPrecision = nPrecision;
+    if (peTABType)
+        *peTABType = eTABType;
+    if (pnWidth)
+        *pnWidth = nWidth;
+    if (pnPrecision)
+        *pnPrecision = nPrecision;
 
     return 0;
 }

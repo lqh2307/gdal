@@ -6,6 +6,7 @@ on:
             - 'doc/**'
         branches-ignore:
             - 'backport**'
+            - 'dependabot**'
     pull_request:
         paths-ignore:
             - 'doc/**'
@@ -21,7 +22,6 @@ jobs:
 
   cppcheck_2004:
     runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
@@ -30,6 +30,29 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y cppcheck libsqlite3-dev ccache sqlite3 libproj-dev cmake
+
+      - name: Run cmake
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+
+      - name: Run cppcheck test
+        run: |
+          cd build
+          ../scripts/cppcheck.sh
+
+  cppcheck_2404:
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+
+      - name: Install Requirements
+        run: |
+          apt update
+          apt install -y cppcheck libsqlite3-dev ccache sqlite3 libproj-dev cmake g++ make
 
       - name: Run cmake
         run: |
@@ -87,20 +110,15 @@ jobs:
 
   doxygen:
     runs-on: ubuntu-latest
+    container: ghcr.io/osgeo/proj-docs
     steps:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
-      - name: Install Requirements
-        run: |
-            sudo apt update
-            sudo apt install doxygen texlive-latex-base
-
       - name: Run doxygen
         run: |
             cd doc
-            make .doxygen_up_to_date >log.txt 2>&1
-            if grep -i warning log.txt | grep -v -e russian -e brazilian; then echo "Doxygen warnings found" && cat log.txt && /bin/false; else echo "No Doxygen warnings found"; fi
+            make doxygen_check_warnings
 
   other_checks:
     runs-on: ubuntu-latest
@@ -139,7 +157,6 @@ jobs:
 
   validate_xml:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
