@@ -1,20 +1,12 @@
-##
-# osgeo/gdal:ubuntu-full
-
-# This file is available at the option of the licensee under:
-# Public domain
-# or licensed under MIT (LICENSE.TXT) Copyright 2019 Even Rouault <even.rouault@spatialys.com>
-
 ARG BASE_IMAGE=ubuntu:24.04
 ARG TARGET_BASE_IMAGE=quanghuy2307/tippecanoe:1.0.0
 
 FROM $BASE_IMAGE as builder
 
-# Derived from osgeo/proj by Howard Butler <howard@hobu.co>
-LABEL maintainer="Even Rouault <even.rouault@spatialys.com>"
-
 ARG TARGET_ARCH=
+
 RUN echo ${TARGET_ARCH}
+
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
 RUN . /buildscripts/bh-set-envvars.sh \
@@ -36,9 +28,9 @@ RUN . /buildscripts/bh-set-envvars.sh \
     && rm -rf /var/lib/apt/lists/*; \
     fi
 
-
 # Setup build env for PROJ
 USER root
+
 RUN . /buildscripts/bh-set-envvars.sh \
     && apt-get update -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing --no-install-recommends \
@@ -294,7 +286,9 @@ RUN . /buildscripts/bh-set-envvars.sh \
 FROM $TARGET_BASE_IMAGE as runner
 
 USER root
+
 RUN date
+
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 
