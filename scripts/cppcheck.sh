@@ -110,6 +110,7 @@ for dirname in alg port gcore ogr frmts gnm apps fuzzers; do
         -DPCIDSK_FRMT_UINT64="\"%llu\"" \
         -DGNMGFIDFormat="\"%lld\"" \
         -DGDAL_RELEASE_NAME="\"dummy\"" \
+        "-DBANDMAP_TYPE=int*" \
         --include="${CPL_CONFIG_H}" \
         --include=port/cpl_port.h \
         -I "${CPL_CONFIG_H_DIR}" \
@@ -165,6 +166,10 @@ mv ${LOG_FILE}.tmp ${LOG_FILE}
 
 # Ignore duplInheritedMember warning
 grep -v -e "duplInheritedMember" ${LOG_FILE} > ${LOG_FILE}.tmp
+mv ${LOG_FILE}.tmp ${LOG_FILE}
+
+# Ignore stlIfStrFind warning "Inefficient usage of string::find() in condition; string::starts_with() could be faster" (requires C++20)
+grep -v -e "stlIfStrFind" ${LOG_FILE} > ${LOG_FILE}.tmp
 mv ${LOG_FILE}.tmp ${LOG_FILE}
 
 if grep "null pointer" ${LOG_FILE} ; then
