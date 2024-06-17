@@ -10,9 +10,6 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 
 FROM $BASE_IMAGE as builder
 
-# Derived from osgeo/proj by Howard Butler <howard@hobu.co>
-LABEL maintainer="Even Rouault <even.rouault@spatialys.com>"
-
 ARG TARGET_ARCH=
 RUN echo ${TARGET_ARCH}
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
@@ -359,5 +356,7 @@ COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
 COPY --from=builder  /build/usr/include/ /usr/include/
 COPY --from=builder  /build_gdal_python/usr/ /usr/
 COPY --from=builder  /build_gdal_version_changing/usr/ /usr/
+
+WORKDIR /data
 
 RUN ldconfig
