@@ -533,12 +533,14 @@ if (Arrow_FOUND)
     mark_as_advanced(ARROW_USE_STATIC_LIBRARIES)
 endif()
 
-gdal_check_package(OpenDrive "Enable libOpenDRIVE" CAN_DISABLE)
+gdal_check_package(OpenDrive "Enable libOpenDRIVE" CONFIG CAN_DISABLE)
 
 # bindings
 
 # finding python in top of project because of common for autotest and bindings
 
+set(JAVA_AWT_LIBRARY NotNeeded)
+set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI)
 find_package(Java COMPONENTS Runtime Development)
 find_program(
