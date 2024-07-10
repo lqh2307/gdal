@@ -10,6 +10,10 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 
 FROM $BASE_IMAGE as builder
 
+# set proxy
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
+
 ARG TARGET_ARCH=
 RUN echo ${TARGET_ARCH}
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
@@ -306,6 +310,10 @@ RUN . /buildscripts/bh-set-envvars.sh \
 
 # Build final image
 FROM $TARGET_BASE_IMAGE as runner
+
+# set proxy
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 USER root
 RUN date
