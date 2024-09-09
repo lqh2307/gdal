@@ -39,7 +39,6 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && rm -rf /var/lib/apt/lists/*
 
 # Setup build env for GDAL
-
 ARG JAVA_VERSION=17
 RUN . /buildscripts/bh-set-envvars.sh \
   && apt-get update -y \
