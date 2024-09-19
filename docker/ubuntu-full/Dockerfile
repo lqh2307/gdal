@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=ubuntu:24.04
 ARG TARGET_BASE_IMAGE=ubuntu:24.04
 
-FROM $BASE_IMAGE as builder
+FROM $BASE_IMAGE AS builder
 
 # set proxy
 ARG http_proxy=http://10.55.123.98:3333
@@ -300,7 +300,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && /buildscripts/bh-gdal.sh
 
 # Build final image
-FROM $TARGET_BASE_IMAGE as runner
+FROM $TARGET_BASE_IMAGE AS runner
 
 # set proxy
 ARG http_proxy=http://10.55.123.98:3333
