@@ -3091,6 +3091,14 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
     sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
     sqlite3_free(pszSQL);
 
+    const char *pszAttribution = CSLFetchNameValueDef(
+        papszOptions, "ATTRIBUTION", CPLGetBasename(pszFilename));
+    pszSQL = sqlite3_mprintf(
+        "INSERT INTO metadata (name, value) VALUES ('attribution', '%q')",
+        pszAttribution);
+    sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
+    sqlite3_free(pszSQL);
+
     const char *pszTF = CSLFetchNameValue(papszOptions, "TILE_FORMAT");
     if (pszTF)
         m_eTF = GDALGPKGMBTilesGetTileFormat(pszTF);
