@@ -23,7 +23,7 @@ export ARROW_SOVERSION="1600"
 export PROJ_INSTALL_PREFIX="/usr/local"
 export PROJ_VERSION="master"
 export GDAL_VERSION="master"
-export GDAL_REPOSITORY="OSGeo/gdal"
+export GDAL_REPOSITORY="lqh2307/gdal"
 export WITH_DEBUG_SYMBOLS="no"
 
 # 

@@ -276,7 +276,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
 ARG GDAL_VERSION=master
 ARG GDAL_RELEASE_DATE
 ARG GDAL_BUILD_IS_RELEASE
-ARG GDAL_REPOSITORY=huylq142/gdal
+ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN . /buildscripts/bh-set-envvars.sh \
@@ -301,8 +301,7 @@ RUN apt-get update -y && apt-get upgrade -y \
 RUN apt-get update -y \
 # PROJ dependencies
   && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    libsqlite3-0 libtiff6 libcurl4 \
-    wget curl unzip ca-certificates \
+    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates \
 # GDAL dependencies
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       libopenjp2-7 libcairo2 python3-numpy \
