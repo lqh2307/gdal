@@ -47,7 +47,7 @@ if [ -n "${TARGET_ARCH}" ]; then
 fi
 
 # Setup build env for PROJ & GDAL
-apt-get update -y && apt-get install -y \
+apt-get update -y && apt-get upgrade -y && apt-get install -y \
   libopenjp2-7-dev${APT_ARCH_SUFFIX} \
   libcairo2-dev${APT_ARCH_SUFFIX} \
   python3-dev${APT_ARCH_SUFFIX} \
@@ -122,8 +122,8 @@ make -j$(nproc)
 make install
 cd ..
 rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip
-for i in /build_thirdparty/usr/lib/*; do strip -s $i 2>/dev/null || /bin/true; done
-for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongo-c-driver
 wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz
@@ -157,8 +157,8 @@ make install DESTDIR=/build_thirdparty
 make install
 cd ../..
 rm -rf mongo-cxx-driver-r${MONGOCXX_VERSION} r${MONGOCXX_VERSION}.tar.gz
-for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s $i 2>/dev/null || /bin/true; done
-for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build tiledb
 wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz

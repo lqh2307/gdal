@@ -75,8 +75,8 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && make install \
   && cd .. \
   && rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip \
-  && for i in /build_thirdparty/usr/lib/*; do strip -s $i 2>/dev/null || /bin/true; done \
-  && for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
+  && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
@@ -92,8 +92,8 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && make install \
   && cd ../.. \
   && rm -rf mongo-c-driver-${MONGO_C_DRIVER_VERSION} mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*.a \
-  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s $i 2>/dev/null || /bin/true; done \
-  && for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
+  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
