@@ -31,7 +31,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
 # Setup build env for PROJ & GDAL
 ARG JAVA_VERSION=17
 RUN . /buildscripts/bh-set-envvars.sh \
-  && apt-get update -y \
+  && apt-get update -y && apt-get upgrade -y \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     # PROJ
     build-essential ca-certificates \
