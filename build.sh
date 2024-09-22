@@ -26,8 +26,10 @@ export GDAL_VERSION="master"
 export GDAL_REPOSITORY="OSGeo/gdal"
 export WITH_DEBUG_SYMBOLS="no"
 
+# 
 ./docker/ubuntu-full/bh-set-envvars.sh
 
+# 
 if [ -n "${TARGET_ARCH}" ]; then
   rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources
   echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list
@@ -56,7 +58,7 @@ apt-get update -y && apt-get install -y \
   libgif-dev${APT_ARCH_SUFFIX} \
   liblzma-dev${APT_ARCH_SUFFIX} \
   libgeos-dev${APT_ARCH_SUFFIX} \
-  curl libxml2-dev${APT_ARCH_SUFFIX} \
+  libxml2-dev${APT_ARCH_SUFFIX} \
   libexpat-dev${APT_ARCH_SUFFIX} \
   libxerces-c-dev${APT_ARCH_SUFFIX} \
   libnetcdf-dev${APT_ARCH_SUFFIX} \
@@ -77,7 +79,7 @@ apt-get update -y && apt-get install -y \
   libmysqlclient-dev${APT_ARCH_SUFFIX} \
   libogdi-dev${APT_ARCH_SUFFIX} \
   libcfitsio-dev${APT_ARCH_SUFFIX} \
-  openjdk-"$JAVA_VERSION"-jdk${APT_ARCH_SUFFIX} \
+  openjdk-${JAVA_VERSION}-jdk${APT_ARCH_SUFFIX} \
   libzstd-dev${APT_ARCH_SUFFIX} \
   libpq-dev${APT_ARCH_SUFFIX} \
   libssl-dev${APT_ARCH_SUFFIX} \
@@ -100,11 +102,11 @@ apt-get update -y && apt-get install -y \
   libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
   libtiff-dev${APT_ARCH_SUFFIX} \
   libgflags-dev${APT_ARCH_SUFFIX} \
-  swig ant liblcms2-2 \
+  curl swig ant liblcms2-2 \
   autoconf automake bash-completion \
   build-essential ca-certificates lsb-release \
   pkg-config sqlite3 git cmake \
-  wget unzip libtool rsync ccache
+  wget unzip libtool ccache
 
 # Build likbkea
 wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip
@@ -136,8 +138,8 @@ make install DESTDIR=/build_thirdparty
 make install
 cd ../..
 rm -rf mongo-c-driver-${MONGO_C_DRIVER_VERSION} mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*.a
-for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s $i 2>/dev/null || /bin/true; done
-for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongocxx
 wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz
@@ -179,8 +181,8 @@ make -j$(nproc) install DESTDIR=/build_thirdparty
 make -j$(nproc) install
 cd ../..
 rm -rf TileDB-${TILEDB_VERSION} ${TILEDB_VERSION}.tar.gz
-for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s $i 2>/dev/null || /bin/true; done
-for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done
+for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build openjpeg
 if [ -n "${OPENJPEG_VERSION}" ]; then
@@ -197,7 +199,7 @@ if [ -n "${OPENJPEG_VERSION}" ]; then
   rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so*
   mv -f /usr/lib/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu
   cp -P -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu
-  for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s $i 2>/dev/null || /bin/true; done
+  for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done
   cd ..
   rm -rf openjpeg-${OPENJPEG_VERSION} v${OPENJPEG_VERSION}.tar.gz
 fi
@@ -214,7 +216,7 @@ if [ -n "${OPENDRIVE_VERSION}" ]; then
   make install
   mkdir -p /build_thirdparty/usr/lib
   cp -P -rf /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib
-  for i in /build_thirdparty/usr/lib/*; do strip -s $i 2>/dev/null || /bin/true; done
+  for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done
   cd ..
   rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz
 fi
@@ -227,7 +229,7 @@ if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then
   rm -rf /usr/local/FileGDB_API/lib/libstdc++*
   cp -rf /usr/local/FileGDB_API/lib/* /usr/lib/x86_64-linux-gnu
   cp -rf /usr/local/FileGDB_API/include/* /usr/include
-  rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz
+  rm -rf FileGDB_API-RHEL7-64gcc83 FileGDB_API-RHEL7-64gcc83.tar.gz
 fi
 
 # Build libqb3
@@ -247,10 +249,9 @@ rm -rf QB3
 if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then
   wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz
   tar xzf install-ubuntu2004-rev6677.tar.gz
-  rsync install/lib/ /usr/lib/
-  rsync install/include/ /usr/include/
+  cp -rf install/lib/* /usr/lib/
   rm -rf install install-ubuntu2004-rev6677.tar.gz
-  apt-get install -y \
+  apt-get update && apt-get install -y \
     liblcms2-dev${APT_ARCH_SUFFIX}
 fi
 
@@ -285,10 +286,10 @@ apt-get update && apt-get install -y \
 rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Install proj_grids & proj
-mkdir -p /tmp/proj_grids_build
-DESTDIR="/tmp/proj_grids_build" ./docker/ubuntu-full/bh-proj.sh
-LD_LIBRARY_PATH="/tmp/proj_grids_build" /tmp/proj_grids_build/usr/local/bin/projsync --target-dir /tmp/proj_grids --all
-rm -rf /tmp/proj_grids_build
+mkdir -p /build_tmp_proj
+DESTDIR=/build_tmp_proj ./docker/ubuntu-full/bh-proj.sh
+LD_LIBRARY_PATH=/build_tmp_proj /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all
+rm -rf /build_tmp_proj
 ./docker/ubuntu-full/bh-proj.sh
 
 # Install gdal
