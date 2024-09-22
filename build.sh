@@ -22,8 +22,8 @@ export ARROW_VERSION="16.1.0-1"
 export ARROW_SOVERSION="1600"
 export PROJ_INSTALL_PREFIX="/usr/local"
 export PROJ_VERSION="master"
-export GDAL_VERSION="master"
 export GDAL_REPOSITORY="lqh2307/gdal"
+export GDAL_VERSION="dev"
 export WITH_DEBUG_SYMBOLS="no"
 
 # 

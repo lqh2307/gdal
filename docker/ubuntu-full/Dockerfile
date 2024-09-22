@@ -58,7 +58,6 @@ RUN . /buildscripts/bh-set-envvars.sh \
     libarchive-dev${APT_ARCH_SUFFIX} \
     libaec-dev${APT_ARCH_SUFFIX} \
     libavif-dev${APT_ARCH_SUFFIX} \
-    rsync ccache \
   && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
@@ -273,10 +272,8 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && /buildscripts/bh-proj.sh
 
 # Build GDAL
-ARG GDAL_VERSION=master
-ARG GDAL_RELEASE_DATE
-ARG GDAL_BUILD_IS_RELEASE
 ARG GDAL_REPOSITORY=lqh2307/gdal
+ARG GDAL_VERSION=dev
 
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN . /buildscripts/bh-set-envvars.sh \
