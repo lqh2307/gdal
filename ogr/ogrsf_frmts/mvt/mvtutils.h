@@ -32,17 +32,15 @@
 #include "cpl_json.h"
 #include "ogrsf_frmts.h"
 
-#define MVT_LCO                                                                 \
-    "<LayerCreationOptionList>"                                                 \
-    "  <Option name='MINZOOM' type='int' min='0' max='22' "                     \
-    "description='Minimum zoom level'/>"                                        \
-    "  <Option name='MAXZOOM' type='int' min='0' max='22' "                     \
-    "description='Maximum zoom level'/>"                                        \
-    "  <Option name='NAME' type='string' description='Target layer name'/>"     \
-    "  <Option name='DESCRIPTION' type='string' "                               \
-    "description='A description of the layer'/>"                                \
-    "  <Option name='ATTRIBUTION' type='string' "                               \
-    "description='An attribution of the layer'/>"                               \
+#define MVT_LCO                                                                \
+    "<LayerCreationOptionList>"                                                \
+    "  <Option name='MINZOOM' type='int' min='0' max='22' "                    \
+    "description='Minimum zoom level'/>"                                       \
+    "  <Option name='MAXZOOM' type='int' min='0' max='22' "                    \
+    "description='Maximum zoom level'/>"                                       \
+    "  <Option name='NAME' type='string' description='Target layer name'/>"    \
+    "  <Option name='DESCRIPTION' type='string' "                              \
+    "description='A description of the layer'/>"                               \
     "</LayerCreationOptionList>"
 
 #define MVT_MBTILES_PMTILES_COMMON_DSCO                                        \

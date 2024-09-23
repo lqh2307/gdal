@@ -3104,7 +3104,7 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
         m_eTF = GDALGPKGMBTilesGetTileFormat(pszTF);
 
     const char *pszVersion = CSLFetchNameValueDef(
-        papszOptions, "VERSION", (m_eTF == GPKG_TF_WEBP) ? "1.3" : "1.1");
+        papszOptions, "VERSION", "1.0.0");
     pszSQL = sqlite3_mprintf(
         "INSERT INTO metadata (name, value) VALUES ('version', '%q')",
         pszVersion);
@@ -3800,8 +3800,8 @@ void GDALRegister_MBTiles()
         "    <Value>baselayer</Value>"
         "  </Option>"
         "  <Option name='VERSION' scope='raster,vector' type='string' "
-        "description='The version of the tileset, as a plain number' "
-        "default='1.1'/>"
+        "description='A version of the tileset' "
+        "default='1.0.0'/>"
         "  <Option name='BLOCKSIZE' scope='raster' type='int' "
         "description='Block size in pixels' default='256' min='64' "
         "max='8192'/>" COMPRESSION_OPTIONS
