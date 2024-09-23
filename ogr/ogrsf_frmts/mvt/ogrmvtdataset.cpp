@@ -3314,6 +3314,7 @@ class OGRMVTWriterDataset final : public GDALDataset
     mutable GIntBig m_nTempTiles = 0;
     CPLString m_osName;
     CPLString m_osDescription;
+    CPLString m_osAttribution;
     CPLString m_osType{"overlay"};
     sqlite3 *m_hDBMBTILES = nullptr;
     OGREnvelope m_oEnvelope;
@@ -5464,6 +5465,7 @@ bool OGRMVTWriterDataset::GenerateMetadata(
 
     WriteMetadataItem("name", m_osName, m_hDBMBTILES, oRoot);
     WriteMetadataItem("description", m_osDescription, m_hDBMBTILES, oRoot);
+    WriteMetadataItem("attribution", m_osAttribution, m_hDBMBTILES, oRoot);
     WriteMetadataItem("version", m_nMetadataVersion, m_hDBMBTILES, oRoot);
     WriteMetadataItem("minzoom", m_nMinZoom, m_hDBMBTILES, oRoot);
     WriteMetadataItem("maxzoom", m_nMaxZoom, m_hDBMBTILES, oRoot);
@@ -6116,6 +6118,8 @@ GDALDataset *OGRMVTWriterDataset::Create(const char *pszFilename, int nXSize,
         CSLFetchNameValueDef(papszOptions, "NAME", CPLGetBasename(pszFilename));
     poDS->m_osDescription = CSLFetchNameValueDef(papszOptions, "DESCRIPTION",
                                                  poDS->m_osDescription.c_str());
+    poDS->m_osAttribution = CSLFetchNameValueDef(papszOptions, "ATTRIBUTION",
+                                                 poDS->m_osAttribution.c_str());
     poDS->m_osType =
         CSLFetchNameValueDef(papszOptions, "TYPE", poDS->m_osType.c_str());
     poDS->m_bGZip = CPLFetchBool(papszOptions, "COMPRESS", poDS->m_bGZip);
@@ -6282,6 +6286,8 @@ void RegisterOGRMVT()
         "  <Option name='NAME' type='string' description='Tileset name'/>"
         "  <Option name='DESCRIPTION' type='string' "
         "description='A description of the tileset'/>"
+        "  <Option name='ATTRIBUTION' type='string' "
+        "description='An attribution of the tileset'/>"
         "  <Option name='TYPE' type='string-select' description='Layer type' "
         "default='overlay'>"
         "    <Value>overlay</Value>"
