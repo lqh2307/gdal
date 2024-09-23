@@ -3793,13 +3793,17 @@ void GDALRegister_MBTiles()
         "  <Option name='DESCRIPTION' scope='raster,vector' type='string' "
         "description='A description of the layer'/>"
         "  <Option name='ATTRIBUTION' scope='raster,vector' type='string' "
+<<<<<<< HEAD
         "description='An attribution of the layer'/>"
+=======
+        "description='An attributtion of the layer'/>"
+>>>>>>> 2b3eba6359e67d286da34d483b691b2a32374eca
         "  <Option name='TYPE' scope='raster,vector' type='string-select' "
         "description='Layer type' default='overlay'>"
         "    <Value>overlay</Value>"
         "    <Value>baselayer</Value>"
         "  </Option>"
-        "  <Option name='VERSION' scope='raster' type='string' "
+        "  <Option name='VERSION' scope='raster,vector' type='string' "
         "description='The version of the tileset, as a plain number' "
         "default='1.1'/>"
         "  <Option name='BLOCKSIZE' scope='raster' type='int' "
