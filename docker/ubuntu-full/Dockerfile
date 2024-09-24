@@ -4,8 +4,8 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 FROM ${BASE_IMAGE} AS builder
 
 # set proxy
-# ARG http_proxy=http://10.55.123.98:3333
-# ARG https_proxy=http://10.55.123.98:3333
+ARG http_proxy=http://10.55.123.98:3333
+ARG https_proxy=http://10.55.123.98:3333
 
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
@@ -35,7 +35,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     # PROJ
     build-essential ca-certificates \
-    git make cmake wget unzip libtool automake \
+    git cmake wget unzip libtool automake \
     zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} \
     pkg-config sqlite3 libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
     libtiff-dev${APT_ARCH_SUFFIX} \
@@ -51,7 +51,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
     libkml-dev${APT_ARCH_SUFFIX} libmysqlclient-dev${APT_ARCH_SUFFIX} libogdi-dev${APT_ARCH_SUFFIX} \
     libcfitsio-dev${APT_ARCH_SUFFIX} openjdk-${JAVA_VERSION}-jdk${APT_ARCH_SUFFIX} libzstd-dev${APT_ARCH_SUFFIX} \
     libpq-dev${APT_ARCH_SUFFIX} libssl-dev${APT_ARCH_SUFFIX} libboost-dev${APT_ARCH_SUFFIX} \
-    autoconf automake bash-completion libarmadillo-dev${APT_ARCH_SUFFIX} \
+    autoconf bash-completion libarmadillo-dev${APT_ARCH_SUFFIX} \
     libopenexr-dev${APT_ARCH_SUFFIX} libheif-dev${APT_ARCH_SUFFIX} \
     libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} libbz2-dev${APT_ARCH_SUFFIX} \
     libbrotli-dev${APT_ARCH_SUFFIX} \
@@ -253,8 +253,6 @@ RUN . /buildscripts/bh-set-envvars.sh \
 ARG WITH_DEBUG_SYMBOLS=no
 
 # Refresh grids
-ARG PROJ_DATUMGRID_LATEST_LAST_MODIFIED
-ARG PROJ_INSTALL_PREFIX=/usr/local
 COPY ./bh-proj.sh /buildscripts/bh-proj.sh
 # We build PROJ a first time, just to build the projsync utility if grids need
 # to be refreshed. We will rebuild just afterwards, but depending on the
@@ -284,8 +282,8 @@ RUN . /buildscripts/bh-set-envvars.sh \
 FROM ${TARGET_BASE_IMAGE} AS runner
 
 # set proxy
-# ARG http_proxy=http://10.55.123.98:3333
-# ARG https_proxy=http://10.55.123.98:3333
+ARG http_proxy=http://10.55.123.98:3333
+ARG https_proxy=http://10.55.123.98:3333
 
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
@@ -336,13 +334,12 @@ RUN apt-get update -y && apt-get upgrade -y \
 # Attempt to order layers starting with less frequently varying ones
 COPY --from=builder  /build_thirdparty/usr/ /usr/
 
-ARG PROJ_INSTALL_PREFIX=/usr/local
-COPY --from=builder  /tmp/proj_grids/* ${PROJ_INSTALL_PREFIX}/share/proj/
+COPY --from=builder  /tmp/proj_grids/* /usr/local/share/proj/
 
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/share/proj/ ${PROJ_INSTALL_PREFIX}/share/proj/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/include/ ${PROJ_INSTALL_PREFIX}/include/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/bin/ ${PROJ_INSTALL_PREFIX}/bin/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/lib/ ${PROJ_INSTALL_PREFIX}/lib/
+COPY --from=builder  /build/usr/local/share/proj/ /usr/local/share/proj/
+COPY --from=builder  /build/usr/local/include/ /usr/local/include/
+COPY --from=builder  /build/usr/local/bin/ /usr/local/bin/
+COPY --from=builder  /build/usr/local/lib/ /usr/local/lib/
 
 COPY --from=builder  /build/usr/share/java /usr/share/java
 COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
