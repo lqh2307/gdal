@@ -5466,7 +5466,7 @@ bool OGRMVTWriterDataset::GenerateMetadata(
     WriteMetadataItem("name", m_osName, m_hDBMBTILES, oRoot);
     WriteMetadataItem("description", m_osDescription, m_hDBMBTILES, oRoot);
     WriteMetadataItem("attribution", m_osAttribution, m_hDBMBTILES, oRoot);
-    WriteMetadataItem("version", m_osName, m_hDBMBTILES, oRoot);
+    WriteMetadataItem("version", m_osVersion, m_hDBMBTILES, oRoot);
     WriteMetadataItem("minzoom", m_nMinZoom, m_hDBMBTILES, oRoot);
     WriteMetadataItem("maxzoom", m_nMaxZoom, m_hDBMBTILES, oRoot);
     WriteMetadataItem("center", !m_osCenter.empty() ? m_osCenter : osCenter,
