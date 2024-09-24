@@ -204,6 +204,8 @@ void RegisterOGRPMTiles()
         "description='Tileset name'/>"
         "  <Option name='DESCRIPTION' scope='raster,vector' type='string' "
         "description='A description of the layer'/>"
+        "  <Option name='ATTRIBUTION' scope='raster,vector' type='string' "
+        "description='An attribution of the layer'/>"
         "  <Option name='TYPE' scope='raster,vector' type='string-select' "
         "description='Layer type' default='overlay'>"
         "    <Value>overlay</Value>"

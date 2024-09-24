@@ -4,8 +4,8 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 FROM ${BASE_IMAGE} AS builder
 
 # set proxy
-ARG http_proxy=http://10.55.123.98:3333
-ARG https_proxy=http://10.55.123.98:3333
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
@@ -239,13 +239,14 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libparquet${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow-dataset${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V \
+    libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
+    libparquet${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
+    libarrow-dataset${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
+    libarrow-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
+    libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
+    libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
+    libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
@@ -283,10 +284,8 @@ RUN . /buildscripts/bh-set-envvars.sh \
 FROM ${TARGET_BASE_IMAGE} AS runner
 
 # set proxy
-ARG http_proxy=http://10.55.123.98:3333
-ARG https_proxy=http://10.55.123.98:3333
-
-RUN date
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
@@ -328,9 +327,10 @@ RUN apt-get update -y && apt-get upgrade -y \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow${ARROW_SOVERSION} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libparquet${ARROW_SOVERSION} \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V libarrow-dataset${ARROW_SOVERSION} \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V \
+    libarrow${ARROW_SOVERSION} \
+    libparquet${ARROW_SOVERSION} \
+    libarrow-dataset${ARROW_SOVERSION} \
   && rm -rf /var/lib/apt/lists/*
 
 # Attempt to order layers starting with less frequently varying ones
