@@ -22,8 +22,7 @@ RUN /buildscripts/bh-set-envvars.sh \
     && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
     && dpkg --add-architecture ${TARGET_ARCH} \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y update && apt-get -y upgrade \
-    && apt-get -y install \
+    && apt-get -y update && apt-get -y upgrade && apt-get -y install \
       g++-13-${GCC_ARCH}-linux-gnu \
     && ln -s ${GCC_ARCH}-linux-gnu-gcc-13 /usr/bin/${GCC_ARCH}-linux-gnu-gcc \
     && ln -s ${GCC_ARCH}-linux-gnu-g++-13 /usr/bin/${GCC_ARCH}-linux-gnu-g++ \
@@ -34,10 +33,9 @@ RUN /buildscripts/bh-set-envvars.sh \
 ARG JAVA_VERSION=17
 RUN /buildscripts/bh-set-envvars.sh \
   && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
+  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ
-    build-essential ca-certificates \
+    build-essential ca-certificates lsb-release \
     git cmake wget unzip libtool automake \
     zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} \
     pkg-config sqlite3 libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
@@ -119,8 +117,7 @@ COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 RUN /buildscripts/bh-set-envvars.sh \
   && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
+  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     libspdlog-dev${APT_ARCH_SUFFIX} \
     libmagic-dev${APT_ARCH_SUFFIX} \
   && rm -rf /var/lib/apt/lists/* \
@@ -209,8 +206,7 @@ RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
     && cp -rf install/* /usr/ \
     && rm -rf install install-ubuntu2004-rev6677.tar.gz \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y update && apt-get -y upgrade \
-    && apt-get -y install \
+    && apt-get -y update && apt-get -y upgrade && apt-get -y install \
       liblcms2-dev${APT_ARCH_SUFFIX} \
     && rm -rf /var/lib/apt/lists/*; \
   fi
@@ -218,8 +214,7 @@ RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
 # Build libjxl
 RUN /buildscripts/bh-set-envvars.sh \
   && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
+  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     libgflags-dev${APT_ARCH_SUFFIX} \
   && rm -rf /var/lib/apt/lists/* \
   && git clone https://github.com/libjxl/libjxl.git --recursive \
@@ -238,14 +233,10 @@ ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
 RUN /buildscripts/bh-set-envvars.sh \
   && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
-    ca-certificates lsb-release wget \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y install \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
+  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
     libparquet${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
     libarrow-dataset${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
@@ -293,10 +284,9 @@ ARG ARROW_SOVERSION=1600
 
 # Update distro
 RUN export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
+  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ dependencies
-    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates \
+    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates lsb-release \
     # GDAL dependencies
     libopenjp2-7 libcairo2 python3-numpy \
     libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
@@ -309,15 +299,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libzstd1 bash bash-completion libpq5 \
     libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 \
-    libbrotli1 \
-    libarchive13 \
-    libaec0 \
-    libavif16 \
+    libbrotli1 libarchive13 libaec0 libavif16 \
     libspdlog1.12 libmagic1t64 \
-    python-is-python3 \
-    # pil for antialias option of gdal2tiles
-    python3-pil \
-    # osmosis
+    python-is-python3 python3-pil \
     osmosis \
   # Install JRE with --no-install-recommends, otherwise it draws default-jre, which draws systemd, which fails to install when running the arm64v8/ubuntu:24.04 image on a 64bit host
   && apt-get -y install --no-install-recommends \
@@ -325,13 +309,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/$(uname -p)-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/$(uname -p)-linux-gnu \
   # Install Arrow C++
-  && apt-get -y install \
-    ca-certificates lsb-release wget \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y install \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
-  && apt-get -y update && apt-get -y upgrade \
-  && apt-get -y install \
+  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
