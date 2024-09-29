@@ -4,8 +4,8 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 FROM ${BASE_IMAGE} AS builder
 
 # set proxy
-ARG http_proxy=http://10.55.123.98:3333
-ARG https_proxy=http://10.55.123.98:3333
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
@@ -21,8 +21,10 @@ RUN . /buildscripts/bh-set-envvars.sh \
     && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-updates main restricted universe" >> /etc/apt/sources.list \
     && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
     && dpkg --add-architecture ${TARGET_ARCH} \
-    && apt-get update -y \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y g++-13-${GCC_ARCH}-linux-gnu \
+    && set -ex && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update && apt-get -y upgrade \
+    && apt-get -y install \
+      g++-13-${GCC_ARCH}-linux-gnu \
     && ln -s ${GCC_ARCH}-linux-gnu-gcc-13 /usr/bin/${GCC_ARCH}-linux-gnu-gcc \
     && ln -s ${GCC_ARCH}-linux-gnu-g++-13 /usr/bin/${GCC_ARCH}-linux-gnu-g++ \
     && rm -rf /var/lib/apt/lists/*; \
@@ -30,9 +32,10 @@ RUN . /buildscripts/bh-set-envvars.sh \
 
 # Setup build env for PROJ & GDAL
 ARG JAVA_VERSION=17
-RUN . /buildscripts/bh-set-envvars.sh \
-  && apt-get update -y && apt-get upgrade -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN /buildscripts/bh-set-envvars.sh \
+  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
     # PROJ
     build-essential ca-certificates \
     git cmake wget unzip libtool automake \
@@ -42,27 +45,28 @@ RUN . /buildscripts/bh-set-envvars.sh \
     # GDAL
     libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
     python3-dev${APT_ARCH_SUFFIX} python3-numpy${APT_ARCH_SUFFIX} python3-setuptools${APT_ARCH_SUFFIX} \
-    libpng-dev${APT_ARCH_SUFFIX} libjpeg-dev${APT_ARCH_SUFFIX} libgif-dev${APT_ARCH_SUFFIX} liblzma-dev${APT_ARCH_SUFFIX} libgeos-dev${APT_ARCH_SUFFIX} \
+    libpng-dev${APT_ARCH_SUFFIX} libjpeg-dev${APT_ARCH_SUFFIX} libgif-dev${APT_ARCH_SUFFIX} \
+    liblzma-dev${APT_ARCH_SUFFIX} \libgeos-dev${APT_ARCH_SUFFIX} \
     curl libxml2-dev${APT_ARCH_SUFFIX} libexpat-dev${APT_ARCH_SUFFIX} libxerces-c-dev${APT_ARCH_SUFFIX} \
     libnetcdf-dev${APT_ARCH_SUFFIX} libpoppler-dev${APT_ARCH_SUFFIX} libpoppler-private-dev${APT_ARCH_SUFFIX} \
-    libspatialite-dev${APT_ARCH_SUFFIX} librasterlite2-dev${APT_ARCH_SUFFIX} swig ant libhdf4-alt-dev${APT_ARCH_SUFFIX} libhdf5-serial-dev${APT_ARCH_SUFFIX} \
-    libfreexl-dev${APT_ARCH_SUFFIX} unixodbc-dev${APT_ARCH_SUFFIX} mdbtools-dev${APT_ARCH_SUFFIX} libwebp-dev${APT_ARCH_SUFFIX} \
+    libspatialite-dev${APT_ARCH_SUFFIX} librasterlite2-dev${APT_ARCH_SUFFIX} \
+    swig ant libhdf4-alt-dev${APT_ARCH_SUFFIX} \libhdf5-serial-dev${APT_ARCH_SUFFIX} \
+    libfreexl-dev${APT_ARCH_SUFFIX} unixodbc-dev${APT_ARCH_SUFFIX} \
+    mdbtools-dev${APT_ARCH_SUFFIX} libwebp-dev${APT_ARCH_SUFFIX} \
     liblcms2-2 libpcre3-dev${APT_ARCH_SUFFIX} libcrypto++-dev${APT_ARCH_SUFFIX} libfyba-dev${APT_ARCH_SUFFIX} \
     libkml-dev${APT_ARCH_SUFFIX} libmysqlclient-dev${APT_ARCH_SUFFIX} libogdi-dev${APT_ARCH_SUFFIX} \
     libcfitsio-dev${APT_ARCH_SUFFIX} openjdk-${JAVA_VERSION}-jdk${APT_ARCH_SUFFIX} libzstd-dev${APT_ARCH_SUFFIX} \
     libpq-dev${APT_ARCH_SUFFIX} libssl-dev${APT_ARCH_SUFFIX} libboost-dev${APT_ARCH_SUFFIX} \
     autoconf bash-completion libarmadillo-dev${APT_ARCH_SUFFIX} \
     libopenexr-dev${APT_ARCH_SUFFIX} libheif-dev${APT_ARCH_SUFFIX} \
-    libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} libbz2-dev${APT_ARCH_SUFFIX} \
-    libbrotli-dev${APT_ARCH_SUFFIX} \
-    libarchive-dev${APT_ARCH_SUFFIX} \
-    libaec-dev${APT_ARCH_SUFFIX} \
-    libavif-dev${APT_ARCH_SUFFIX} \
+    libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} \
+    libbz2-dev${APT_ARCH_SUFFIX} libbrotli-dev${APT_ARCH_SUFFIX} libarchive-dev${APT_ARCH_SUFFIX} \
+    libaec-dev${APT_ARCH_SUFFIX} libavif-dev${APT_ARCH_SUFFIX} \
   && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
 ARG KEA_VERSION=1.5.2
-RUN . /buildscripts/bh-set-envvars.sh \
+RUN /buildscripts/bh-set-envvars.sh \
   && wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
   && cd kealib-kealib-${KEA_VERSION} \
@@ -79,7 +83,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
 
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
-RUN . /buildscripts/bh-set-envvars.sh \
+RUN /buildscripts/bh-set-envvars.sh \
   && wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
   && tar xzf mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
   && cd mongo-c-driver-${MONGO_C_DRIVER_VERSION} \
@@ -96,7 +100,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
 
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
-RUN . /buildscripts/bh-set-envvars.sh \
+RUN /buildscripts/bh-set-envvars.sh \
   && wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
   && tar xzf r${MONGOCXX_VERSION}.tar.gz \
   && cd mongo-cxx-driver-r${MONGOCXX_VERSION} \
@@ -116,9 +120,11 @@ ARG TILEDB_VERSION=2.23.0
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 RUN . /buildscripts/bh-set-envvars.sh \
-  && apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    libspdlog-dev${APT_ARCH_SUFFIX} libmagic-dev${APT_ARCH_SUFFIX} \
+  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
+    libspdlog-dev${APT_ARCH_SUFFIX} \
+    libmagic-dev${APT_ARCH_SUFFIX} \
   && rm -rf /var/lib/apt/lists/* \
   && wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
   && tar xzf ${TILEDB_VERSION}.tar.gz \
@@ -138,58 +144,56 @@ RUN . /buildscripts/bh-set-envvars.sh \
 
 # Build openjpeg
 ARG OPENJPEG_VERSION=
-RUN . /buildscripts/bh-set-envvars.sh \
-  && if test "${OPENJPEG_VERSION}" != ""; then ( \
-  wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
-  && tar xzf v${OPENJPEG_VERSION}.tar.gz \
-  && cd openjpeg-${OPENJPEG_VERSION} \
-  && cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-  && make -j$(nproc) \
-  && make install \
-  && mkdir -p /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
-  && rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* \
-  && mv -f /usr/lib/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
-  && cp -rf -P /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
-  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
-  && cd .. \
-  && rm -rf openjpeg-${OPENJPEG_VERSION} v${OPENJPEG_VERSION}.tar.gz \
-  ); fi
+RUN /buildscripts/bh-set-envvars.sh \
+  && if test "${OPENJPEG_VERSION}" != ""; then \
+    wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
+    && tar xzf v${OPENJPEG_VERSION}.tar.gz \
+    && cd openjpeg-${OPENJPEG_VERSION} \
+    && cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+    && make -j$(nproc) \
+    && make install \
+    && mkdir -p /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
+    && rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* \
+    && mv -f /usr/lib/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
+    && cp -rf -P /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
+    && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+    && cd .. \
+    && rm -rf openjpeg-${OPENJPEG_VERSION} v${OPENJPEG_VERSION}.tar.gz; \
+  fi
 
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
-RUN . /buildscripts/bh-set-envvars.sh \
-  && if test "${OPENDRIVE_VERSION}" != ""; then ( \
-  wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
-  && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
-  && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
-  && cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=/usr/ \
-  && make -j$(nproc) \
-  && make install \
-  && mkdir -p /build_thirdparty/usr/lib \
-  && cp -rf -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
-  && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
-  && cd .. \
-  && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz \
-  ); fi
+RUN /buildscripts/bh-set-envvars.sh \
+  && if test "${OPENDRIVE_VERSION}" != ""; then \
+    wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+    && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
+    && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
+    && cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
+    && make -j$(nproc) \
+    && make install \
+    && mkdir -p /build_thirdparty/usr/lib \
+    && cp -rf -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
+    && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+    && cd .. \
+    && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz; \
+  fi
 
 #Build File Geodatabase
 ARG WITH_FILEGDB=
-RUN . /buildscripts/bh-set-envvars.sh \
-  && if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then ( \
-  wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
-  && mv -f FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
-  && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
-  && cp -rf /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
-  && cp -rf /usr/local/FileGDB_API/include/* /usr/include \
-  && rm -rf FileGDB_API-RHEL7-64gcc83 FileGDB_API-RHEL7-64gcc83.tar.gz \
-  ) ; fi
+RUN /buildscripts/bh-set-envvars.sh \
+  && if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then \
+    wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+    && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
+    && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
+    && mv -f FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
+    && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
+    && cp -rf /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
+    && cp -rf /usr/local/FileGDB_API/include/* /usr/include \
+    && rm -rf FileGDB_API-RHEL7-64gcc83 FileGDB_API-RHEL7-64gcc83.tar.gz; \
+  fi
 
 # Build libqb3
-RUN . /buildscripts/bh-set-envvars.sh \
+RUN /buildscripts/bh-set-envvars.sh \
   && git clone https://github.com/lucianpls/QB3.git --recursive \
   && cd QB3/QB3lib \
   && mkdir -p build \
@@ -202,21 +206,25 @@ RUN . /buildscripts/bh-set-envvars.sh \
   && rm -rf QB3
 
 ARG WITH_PDFIUM=yes
-RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then ( \
-  wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
-  && tar -xzf install-ubuntu2004-rev6677.tar.gz \
-  && chown -R root:root install \
-  && cp -rf install/* /usr/ \
-  && rm -rf install install-ubuntu2004-rev6677.tar.gz \
-  && apt-get update -y \
-  && apt-get install -y liblcms2-dev${APT_ARCH_SUFFIX} \
-  && rm -rf /var/lib/apt/lists/* \
-  ) ; fi
+RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
+    wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
+    && tar -xzf install-ubuntu2004-rev6677.tar.gz \
+    && chown -R root:root install \
+    && cp -rf install/* /usr/ \
+    && rm -rf install install-ubuntu2004-rev6677.tar.gz \
+    && set -ex && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update && apt-get -y upgrade \
+    && apt-get -y install \
+      liblcms2-dev${APT_ARCH_SUFFIX} \
+    && rm -rf /var/lib/apt/lists/*; \
+  fi
 
 # Build libjxl
-RUN . /buildscripts/bh-set-envvars.sh \
-  && apt-get update -y \
-  && apt-get install -y libgflags-dev${APT_ARCH_SUFFIX} \
+RUN /buildscripts/bh-set-envvars.sh \
+  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
+    libgflags-dev${APT_ARCH_SUFFIX} \
   && rm -rf /var/lib/apt/lists/* \
   && git clone https://github.com/libjxl/libjxl.git --recursive \
   && cd libjxl \
@@ -233,13 +241,16 @@ RUN . /buildscripts/bh-set-envvars.sh \
 ARG ARROW_VERSION=16.1.0-1
 # ARROW_SOVERSION to be updated in the "Build final image" section too
 ARG ARROW_SOVERSION=1600
-RUN . /buildscripts/bh-set-envvars.sh \
-  && apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V ca-certificates lsb-release wget \
+RUN /buildscripts/bh-set-envvars.sh \
+  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
+    ca-certificates lsb-release wget \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
-  && apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V \
+  && apt-get -y install \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
     libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
     libparquet${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
     libarrow-dataset${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
@@ -289,12 +300,13 @@ ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 
 # Update distro
-RUN apt-get update -y && apt-get upgrade -y \
-  # PROJ dependencies
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN \
+  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
+    # PROJ dependencies
     libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates \
-  # GDAL dependencies
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    # GDAL dependencies
     libopenjp2-7 libcairo2 python3-numpy \
     libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
     libxml2 libexpat1 \
@@ -317,15 +329,18 @@ RUN apt-get update -y && apt-get upgrade -y \
     # osmosis
     osmosis \
   # Install JRE with --no-install-recommends, otherwise it draws default-jre, which draws systemd, which fails to install when running the arm64v8/ubuntu:24.04 image on a 64bit host
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openjdk-${JAVA_VERSION}-jre \
+  && apt-get -y install --no-install-recommends \
+    openjdk-${JAVA_VERSION}-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/$(uname -p)-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/$(uname -p)-linux-gnu \
   # Install Arrow C++
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V ca-certificates lsb-release wget \
+  && apt-get -y \
+    install ca-certificates lsb-release wget \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
-  && apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y -V \
+  && apt-get -y install \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+  && apt-get -y update && apt-get -y upgrade \
+  && apt-get -y install \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
