@@ -10,7 +10,7 @@ FROM ${BASE_IMAGE} AS builder
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
 ARG TARGET_ARCH=
-RUN . /buildscripts/bh-set-envvars.sh \
+RUN /buildscripts/bh-set-envvars.sh \
   && if test "${TARGET_ARCH}" != ""; then \
     rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
     && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list \
@@ -21,7 +21,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
     && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-updates main restricted universe" >> /etc/apt/sources.list \
     && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
     && dpkg --add-architecture ${TARGET_ARCH} \
-    && set -ex && export DEBIAN_FRONTEND=noninteractive \
+    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y update && apt-get -y upgrade \
     && apt-get -y install \
       g++-13-${GCC_ARCH}-linux-gnu \
@@ -33,7 +33,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
 # Setup build env for PROJ & GDAL
 ARG JAVA_VERSION=17
 RUN /buildscripts/bh-set-envvars.sh \
-  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade \
   && apt-get -y install \
     # PROJ
@@ -119,8 +119,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 ARG TILEDB_VERSION=2.23.0
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
-RUN . /buildscripts/bh-set-envvars.sh \
-  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+RUN /buildscripts/bh-set-envvars.sh \
+  && export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade \
   && apt-get -y install \
     libspdlog-dev${APT_ARCH_SUFFIX} \
@@ -212,7 +212,7 @@ RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
     && chown -R root:root install \
     && cp -rf install/* /usr/ \
     && rm -rf install install-ubuntu2004-rev6677.tar.gz \
-    && set -ex && export DEBIAN_FRONTEND=noninteractive \
+    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y update && apt-get -y upgrade \
     && apt-get -y install \
       liblcms2-dev${APT_ARCH_SUFFIX} \
@@ -221,7 +221,7 @@ RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
 
 # Build libjxl
 RUN /buildscripts/bh-set-envvars.sh \
-  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade \
   && apt-get -y install \
     libgflags-dev${APT_ARCH_SUFFIX} \
@@ -242,7 +242,7 @@ ARG ARROW_VERSION=16.1.0-1
 # ARROW_SOVERSION to be updated in the "Build final image" section too
 ARG ARROW_SOVERSION=1600
 RUN /buildscripts/bh-set-envvars.sh \
-  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+  && export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade \
   && apt-get -y install \
     ca-certificates lsb-release wget \
@@ -271,37 +271,34 @@ COPY ./bh-proj.sh /buildscripts/bh-proj.sh
 # We want 2 separate steps for incremental builds where grids are refreshed
 # only when the content of cdn.proj.org has changed, independently if PROJ master
 # itself has changed.
-RUN . /buildscripts/bh-set-envvars.sh \
+RUN /buildscripts/bh-set-envvars.sh \
   && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
 
 # Build PROJ
 ARG PROJ_VERSION=master
-RUN . /buildscripts/bh-set-envvars.sh \
-  && /buildscripts/bh-proj.sh
+RUN /buildscripts/bh-set-envvars.sh && /buildscripts/bh-proj.sh
 
 # Build GDAL
 ARG GDAL_REPOSITORY=lqh2307/gdal
 ARG GDAL_VERSION=dev
 
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
-RUN . /buildscripts/bh-set-envvars.sh \
-  && /buildscripts/bh-gdal.sh
+RUN /buildscripts/bh-set-envvars.sh && /buildscripts/bh-gdal.sh
 
 # Build final image
 FROM ${TARGET_BASE_IMAGE} AS runner
 
 # set proxy
-ARG http_proxy=http://10.55.123.98:3333
-ARG https_proxy=http://10.55.123.98:3333
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 
 # Update distro
-RUN \
-  && set -ex && export DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade \
   && apt-get -y install \
     # PROJ dependencies
@@ -334,8 +331,8 @@ RUN \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/$(uname -p)-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/$(uname -p)-linux-gnu \
   # Install Arrow C++
-  && apt-get -y \
-    install ca-certificates lsb-release wget \
+  && apt-get -y install \
+    ca-certificates lsb-release wget \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y install \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
