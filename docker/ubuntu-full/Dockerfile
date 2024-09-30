@@ -36,16 +36,16 @@ RUN /buildscripts/bh-set-envvars.sh \
   && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ
     build-essential ca-certificates lsb-release \
-    git cmake wget unzip libtool automake \
+    git cmake wget unzip libtool automake pkg-config sqlite3 \
     zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} \
-    pkg-config libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
-    libtiff-dev${APT_ARCH_SUFFIX} \
+    libcurl4-openssl-dev${APT_ARCH_SUFFIX} libtiff-dev${APT_ARCH_SUFFIX} \
     # GDAL
+    curl autoconf bash-completion \
     libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
     python3-dev${APT_ARCH_SUFFIX} python3-numpy${APT_ARCH_SUFFIX} python3-setuptools${APT_ARCH_SUFFIX} \
     libpng-dev${APT_ARCH_SUFFIX} libjpeg-dev${APT_ARCH_SUFFIX} libgif-dev${APT_ARCH_SUFFIX} \
     liblzma-dev${APT_ARCH_SUFFIX} libgeos-dev${APT_ARCH_SUFFIX} \
-    curl libxml2-dev${APT_ARCH_SUFFIX} libexpat-dev${APT_ARCH_SUFFIX} libxerces-c-dev${APT_ARCH_SUFFIX} \
+    libxml2-dev${APT_ARCH_SUFFIX} libexpat-dev${APT_ARCH_SUFFIX} libxerces-c-dev${APT_ARCH_SUFFIX} \
     libnetcdf-dev${APT_ARCH_SUFFIX} libpoppler-dev${APT_ARCH_SUFFIX} libpoppler-private-dev${APT_ARCH_SUFFIX} \
     libspatialite-dev${APT_ARCH_SUFFIX} librasterlite2-dev${APT_ARCH_SUFFIX} \
     swig ant libhdf4-alt-dev${APT_ARCH_SUFFIX} libhdf5-serial-dev${APT_ARCH_SUFFIX} \
@@ -55,8 +55,7 @@ RUN /buildscripts/bh-set-envvars.sh \
     libkml-dev${APT_ARCH_SUFFIX} libmysqlclient-dev${APT_ARCH_SUFFIX} libogdi-dev${APT_ARCH_SUFFIX} \
     libcfitsio-dev${APT_ARCH_SUFFIX} openjdk-${JAVA_VERSION}-jdk${APT_ARCH_SUFFIX} libzstd-dev${APT_ARCH_SUFFIX} \
     libpq-dev${APT_ARCH_SUFFIX} libssl-dev${APT_ARCH_SUFFIX} libboost-dev${APT_ARCH_SUFFIX} \
-    autoconf bash-completion libarmadillo-dev${APT_ARCH_SUFFIX} \
-    libopenexr-dev${APT_ARCH_SUFFIX} libheif-dev${APT_ARCH_SUFFIX} \
+    libarmadillo-dev${APT_ARCH_SUFFIX} libopenexr-dev${APT_ARCH_SUFFIX} libheif-dev${APT_ARCH_SUFFIX} \
     libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} \
     libbz2-dev${APT_ARCH_SUFFIX} libbrotli-dev${APT_ARCH_SUFFIX} libarchive-dev${APT_ARCH_SUFFIX} \
     libaec-dev${APT_ARCH_SUFFIX} libavif-dev${APT_ARCH_SUFFIX} \
