@@ -32,7 +32,7 @@ RUN \
     swig ant libhdf4-alt-dev libhdf5-serial-dev \
     libfreexl-dev unixodbc-dev \
     mdbtools-dev libwebp-dev \
-    liblcms2-2 libpcre3-dev libcrypto++-dev libfyba-dev \
+    liblcms2-dev libpcre3-dev libcrypto++-dev libfyba-dev \
     libkml-dev libmysqlclient-dev libogdi-dev \
     libcfitsio-dev openjdk-${JAVA_VERSION}-jdk libzstd-dev \
     libpq-dev libssl-dev libboost-dev \
@@ -45,8 +45,8 @@ RUN \
     libmagic-dev \
     # libjxl
     libgflags-dev \
-    # pbfium
-    liblcms2-dev \
+    && apt-get -y --purge autoremove \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
@@ -160,8 +160,7 @@ RUN \
   wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
   && tar -xzf install-ubuntu2004-rev6677.tar.gz \
   && cp -rf install/* /usr/ \
-  && rm -rf install install-ubuntu2004-rev6677.tar.gz \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf install install-ubuntu2004-rev6677.tar.gz
 
 # Build libjxl
 RUN \
@@ -191,6 +190,8 @@ RUN \
     libparquet-dev=${ARROW_VERSION} \
     libarrow-acero-dev=${ARROW_VERSION} \
     libarrow-dataset-dev=${ARROW_VERSION} \
+  && apt-get -y --purge autoremove \
+  && apt-get clean \
   && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Build PROJ & grids
@@ -248,6 +249,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
+  && apt-get -y --purge autoremove \
+  && apt-get clean \
   && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Attempt to order layers starting with less frequently varying ones
