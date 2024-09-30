@@ -137,7 +137,6 @@ RUN \
 RUN \
   wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
   && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
   && mv -f FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
   && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
   && cp -rf /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
@@ -160,7 +159,6 @@ RUN \
 RUN \
   wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
   && tar -xzf install-ubuntu2004-rev6677.tar.gz \
-  && chown -R root:root install \
   && cp -rf install/* /usr/ \
   && rm -rf install install-ubuntu2004-rev6677.tar.gz \
   && rm -rf /var/lib/apt/lists/*
