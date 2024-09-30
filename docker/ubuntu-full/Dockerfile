@@ -40,7 +40,7 @@ RUN /buildscripts/bh-set-envvars.sh \
     zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} \
     libcurl4-openssl-dev${APT_ARCH_SUFFIX} libtiff-dev${APT_ARCH_SUFFIX} \
     # GDAL
-    curl autoconf bash-completion \
+    curl autoconf \
     libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
     python3-dev${APT_ARCH_SUFFIX} python3-numpy${APT_ARCH_SUFFIX} python3-setuptools${APT_ARCH_SUFFIX} \
     libpng-dev${APT_ARCH_SUFFIX} libjpeg-dev${APT_ARCH_SUFFIX} libgif-dev${APT_ARCH_SUFFIX} \
@@ -285,18 +285,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     # PROJ dependencies
     libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates lsb-release \
     # GDAL dependencies
-    libopenjp2-7 libcairo2 python3-numpy \
-    libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
-    libxml2 libexpat1 \
+    libopenjp2-7 libcairo2 python3-numpy libpng16-16 libjpeg-turbo8 libgif7 \
+    liblzma5 libgeos3.12.1 libgeos-c1v5 libxml2 libexpat1 \
     libxerces-c3.2 libnetcdf-c++4-1 netcdf-bin libpoppler134 libspatialite8 librasterlite2-1 gpsbabel \
     libhdf4-0-alt libhdf5-103-1 libhdf5-cpp-103-1 poppler-utils libfreexl1 unixodbc mdbtools libwebp7 \
-    liblcms2-2 libpcre3 libcrypto++8 libfyba0 \
-    libkmlbase1 libkmlconvenience1 libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 \
-    libmysqlclient21 libogdi4.1 libcfitsio10 \
-    libzstd1 bash bash-completion libpq5 \
-    libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
-    libdeflate0 libblosc1 liblz4-1 \
-    libbrotli1 libarchive13 libaec0 libavif16 \
+    liblcms2-2 libpcre3 libcrypto++8 libfyba0 libkmlbase1 libkmlconvenience1 \
+    libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 libmysqlclient21 libogdi4.1 libcfitsio10 \
+    libzstd1 libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
+    libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 \
     libspdlog1.12 libmagic1t64 \
     python-is-python3 python3-pil \
     osmosis \
