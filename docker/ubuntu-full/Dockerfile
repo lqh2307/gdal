@@ -125,7 +125,7 @@ RUN /buildscripts/bh-set-envvars.sh \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
   && patch -p0 < /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch \
   && mkdir -p build && cd build \
-  && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/${GCC_ARCH}-linux-gnu/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/lib/${GCC_ARCH}-linux-gnu/libssl.so \
+  && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
   && make -j$(nproc) \
   && make -j$(nproc) install DESTDIR=/build_thirdparty \
   && make -j$(nproc) install \
