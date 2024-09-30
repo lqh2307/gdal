@@ -47,30 +47,10 @@ ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}/usr/local/lib/libinternalproj.
 
 rm "${DESTDIR}/usr/local/lib"/libproj.*
 
-if [ "${WITH_DEBUG_SYMBOLS}" = "yes" ]; then
-  # separate debug symbols
-  mkdir -p "${DESTDIR}/usr/local/lib/.debug/" "${DESTDIR}/usr/local/bin/.debug/"
-
-  DEBUG_SO="${DESTDIR}/usr/local/lib/.debug/libinternalproj.so.${PROJ_SO}.debug"
-  ${GCC_ARCH}-linux-gnu-objcopy -v --only-keep-debug --compress-debug-sections "${PROJ_SO_DEST}" "${DEBUG_SO}"
-  ${GCC_ARCH}-linux-gnu-strip --strip-debug --strip-unneeded "${PROJ_SO_DEST}"
-  ${GCC_ARCH}-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_SO}" "${PROJ_SO_DEST}"
-
-  for P in "${DESTDIR}/usr/local/bin"/*; do
-    if file -h "$P" | grep -qi elf; then
-      F=$(basename "$P")
-      DEBUG_P="${DESTDIR}/usr/local/bin/.debug/${F}.debug"
-      ${GCC_ARCH}-linux-gnu-objcopy -v --only-keep-debug --strip-unneeded "$P" "${DEBUG_P}"
-      ${GCC_ARCH}-linux-gnu-strip --strip-debug --strip-unneeded "$P"
-      ${GCC_ARCH}-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_P}" "$P"
-    fi
-  done
-else
-  ${GCC_ARCH}-linux-gnu-strip -s "${PROJ_SO_DEST}"
-  for P in "${DESTDIR}/usr/local/bin"/*; do
-    ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
-  done;
-fi
+${GCC_ARCH}-linux-gnu-strip -s "${PROJ_SO_DEST}"
+for P in "${DESTDIR}/usr/local/bin"/*; do
+  ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
+done;
 
 apt-get update -y
 DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y patchelf

@@ -67,21 +67,7 @@ mv /build/usr/include/gdal_version.h /build_gdal_version_changing/usr/include
 mv /build/usr/bin/*.py               /build_gdal_python/usr/bin
 mv /build/usr/bin                    /build_gdal_version_changing/usr
 
-if [ "${WITH_DEBUG_SYMBOLS}" = "yes" ]; then
-  # separate debug symbols
-  for P in "/build_gdal_version_changing/usr/lib/${GCC_ARCH}-linux-gnu"/* "/build_gdal_version_changing/usr/lib/${GCC_ARCH}-linux-gnu"/gdalplugins/* /build_gdal_python/usr/lib/python3/dist-packages/osgeo/*.so /build_gdal_version_changing/usr/bin/*; do
-    if file -h "$P" | grep -qi elf; then
-      F=$(basename "$P")
-      mkdir -p "$(dirname "$P")/.debug"
-      DEBUG_P="$(dirname "$P")/.debug/${F}.debug"
-      ${GCC_ARCH}-linux-gnu-objcopy -v --only-keep-debug --compress-debug-sections "$P" "${DEBUG_P}"
-      ${GCC_ARCH}-linux-gnu-strip --strip-debug --strip-unneeded "$P"
-      ${GCC_ARCH}-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_P}" "$P"
-    fi
-  done
-else
-  for P in "/build_gdal_version_changing/usr/lib/${GCC_ARCH}-linux-gnu"/*; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-  for P in "/build_gdal_version_changing/usr/lib/${GCC_ARCH}-linux-gnu"/gdalplugins/*; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-  for P in /build_gdal_python/usr/lib/python3/dist-packages/osgeo/*.so; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-  for P in /build_gdal_version_changing/usr/bin/*; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-fi
+for P in "/build_gdal_version_changing/usr/lib/${GCC_ARCH}-linux-gnu"/*; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
+for P in "/build_gdal_version_changing/usr/lib/${GCC_ARCH}-linux-gnu"/gdalplugins/*; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
+for P in /build_gdal_python/usr/lib/python3/dist-packages/osgeo/*.so; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
+for P in /build_gdal_version_changing/usr/bin/*; do ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done

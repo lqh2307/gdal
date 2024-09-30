@@ -45,6 +45,8 @@ RUN \
     libmagic-dev \
     # libjxl
     libgflags-dev \
+    # pbfium
+    liblcms2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
@@ -152,19 +154,16 @@ RUN \
     && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz; \
   fi
 
-#Build File Geodatabase
-ARG WITH_FILEGDB=
+# Build File Geodatabase
 RUN \
-  if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then \
-    wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-    && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
-    && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
-    && mv -f FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
-    && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
-    && cp -rf /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
-    && cp -rf /usr/local/FileGDB_API/include/* /usr/include \
-    && rm -rf FileGDB_API-RHEL7-64gcc83 FileGDB_API-RHEL7-64gcc83.tar.gz; \
-  fi
+  wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
+  && mv -f FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
+  && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
+  && cp -rf /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
+  && cp -rf /usr/local/FileGDB_API/include/* /usr/include \
+  && rm -rf FileGDB_API-RHEL7-64gcc83 FileGDB_API-RHEL7-64gcc83.tar.gz
 
 # Build libqb3
 RUN \
@@ -178,18 +177,14 @@ RUN \
   && cd ../../.. \
   && rm -rf QB3
 
-ARG WITH_PDFIUM=yes
-RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
-    wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
-    && tar -xzf install-ubuntu2004-rev6677.tar.gz \
-    && chown -R root:root install \
-    && cp -rf install/* /usr/ \
-    && rm -rf install install-ubuntu2004-rev6677.tar.gz \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y update && apt-get -y upgrade && apt-get -y install \
-      liblcms2-dev \
-    && rm -rf /var/lib/apt/lists/*; \
-  fi
+# Build pdfium
+RUN \
+  wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
+  && tar -xzf install-ubuntu2004-rev6677.tar.gz \
+  && chown -R root:root install \
+  && cp -rf install/* /usr/ \
+  && rm -rf install install-ubuntu2004-rev6677.tar.gz \
+  && rm -rf /var/lib/apt/lists/*
 
 # Build libjxl
 RUN \
@@ -205,7 +200,6 @@ RUN \
 
 # Install Arrow C++
 ARG ARROW_VERSION=16.1.0-1
-# ARROW_SOVERSION to be updated in the "Build final image" section too
 ARG ARROW_SOVERSION=1600
 RUN \
   export DEBIAN_FRONTEND=noninteractive \
@@ -221,8 +215,6 @@ RUN \
     libarrow-acero-dev=${ARROW_VERSION} \
     libarrow-dataset-dev=${ARROW_VERSION} \
   && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
-
-ARG WITH_DEBUG_SYMBOLS=no
 
 # Refresh grids
 COPY ./bh-proj.sh /buildscripts/bh-proj.sh
