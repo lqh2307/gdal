@@ -99,7 +99,7 @@ RUN \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build tiledb
-ARG TILEDB_VERSION=2.23.0
+ARG TILEDB_VERSION=2.26.2
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 RUN \
@@ -119,40 +119,36 @@ RUN \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build openjpeg
-ARG OPENJPEG_VERSION=
+ARG OPENJPEG_VERSION=2.5.2
 RUN \
-  if test "${OPENJPEG_VERSION}" != ""; then \
-    wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
-    && tar xzf v${OPENJPEG_VERSION}.tar.gz \
-    && cd openjpeg-${OPENJPEG_VERSION} \
-    && cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
-    && make -j$(nproc) \
-    && make install \
-    && mkdir -p /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
-    && rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* \
-    && mv -f /usr/lib/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
-    && cp -rf -P /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
-    && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
-    && cd .. \
-    && rm -rf openjpeg-${OPENJPEG_VERSION} v${OPENJPEG_VERSION}.tar.gz; \
-  fi
+  wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
+  && tar xzf v${OPENJPEG_VERSION}.tar.gz \
+  && cd openjpeg-${OPENJPEG_VERSION} \
+  && cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+  && make -j$(nproc) \
+  && make install \
+  && mkdir -p /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
+  && rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* \
+  && mv -f /usr/lib/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
+  && cp -rf -P /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
+  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && cd .. \
+  && rm -rf openjpeg-${OPENJPEG_VERSION} v${OPENJPEG_VERSION}.tar.gz;
 
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN \
-  if test "${OPENDRIVE_VERSION}" != ""; then \
-    wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
-    && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
-    && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
-    && cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
-    && make -j$(nproc) \
-    && make install \
-    && mkdir -p /build_thirdparty/usr/lib \
-    && cp -rf -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
-    && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
-    && cd .. \
-    && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz; \
-  fi
+  wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+  && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
+  && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
+  && cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
+  && make -j$(nproc) \
+  && make install \
+  && mkdir -p /build_thirdparty/usr/lib \
+  && cp -rf -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
+  && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && cd .. \
+  && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz;
 
 # Build File Geodatabase
 RUN \
@@ -216,30 +212,20 @@ RUN \
     libarrow-dataset-dev=${ARROW_VERSION} \
   && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
-# Refresh grids
+# Build PROJ & grids
 COPY ./bh-proj.sh /buildscripts/bh-proj.sh
-# We build PROJ a first time, just to build the projsync utility if grids need
-# to be refreshed. We will rebuild just afterwards, but depending on the
-# PROJ_VERSION argument
-# We want 2 separate steps for incremental builds where grids are refreshed
-# only when the content of cdn.proj.org has changed, independently if PROJ master
-# itself has changed.
+
 RUN \
   DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
 
-# Build PROJ
-ARG PROJ_VERSION=master
 RUN /buildscripts/bh-proj.sh
 
 # Build GDAL
-ARG GDAL_REPOSITORY=lqh2307/gdal
-ARG GDAL_VERSION=dev
-
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
 
-RUN /buildscripts/bh-gdal.sh
+RUN GDAL_REPOSITORY=lqh2307/gdal GDAL_VERSION=dev /buildscripts/bh-gdal.sh
 
 # Build final image
 FROM ${TARGET_BASE_IMAGE} AS runner

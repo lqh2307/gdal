@@ -2,19 +2,15 @@
 
 set -e
 
-if test "${PROJ_VERSION}" = ""; then
-  PROJ_VERSION=master
-fi
-
 if test "${DESTDIR}" = ""; then
   DESTDIR=/build
 fi
 
 set -eu
 
-wget -q https://github.com/OSGeo/PROJ/archive/${PROJ_VERSION}.tar.gz && tar xzf ${PROJ_VERSION}.tar.gz
+wget -q https://github.com/OSGeo/PROJ/archive/master.tar.gz && tar xzf master.tar.gz
 
-cd PROJ-${PROJ_VERSION}
+cd PROJ-master
 
 export CFLAGS="-DPROJ_RENAME_SYMBOLS -O2 -g"
 export CXXFLAGS="-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2 -g"
@@ -30,7 +26,7 @@ make install DESTDIR="${DESTDIR}"
 
 cd ..
 
-rm -rf PROJ-${PROJ_VERSION} ${PROJ_VERSION}.tar.gz
+rm -rf PROJ-master master.tar.gz
 
 if test "${DESTDIR}" = "/build_tmp_proj"; then
   exit 0
