@@ -86,7 +86,7 @@ RUN /buildscripts/bh-set-envvars.sh \
 ARG MONGO_C_DRIVER_VERSION=1.24.4
 RUN /buildscripts/bh-set-envvars.sh \
   && wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
-  && tar xzf mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
+  && tar xzf --strip-components=1 mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
   && cd mongo-c-driver-${MONGO_C_DRIVER_VERSION} \
   && mkdir -p build && cd build \
   && cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
@@ -102,7 +102,7 @@ RUN /buildscripts/bh-set-envvars.sh \
 ARG MONGOCXX_VERSION=3.8.1
 RUN /buildscripts/bh-set-envvars.sh \
   && wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
-  && tar xzf r${MONGOCXX_VERSION}.tar.gz \
+  && tar xzf --strip-components=1 r${MONGOCXX_VERSION}.tar.gz \
   && cd mongo-cxx-driver-r${MONGOCXX_VERSION} \
   && mkdir -p build && cd build \
   && cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
@@ -120,7 +120,7 @@ COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 RUN /buildscripts/bh-set-envvars.sh \
   && wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
-  && tar xzf ${TILEDB_VERSION}.tar.gz \
+  && tar xzf --strip-components=1 ${TILEDB_VERSION}.tar.gz \
   && cd TileDB-${TILEDB_VERSION} \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
   && patch -p0 < /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch \
@@ -139,7 +139,7 @@ ARG OPENJPEG_VERSION=
 RUN /buildscripts/bh-set-envvars.sh \
   && if test "${OPENJPEG_VERSION}" != ""; then \
     wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
-    && tar xzf v${OPENJPEG_VERSION}.tar.gz \
+    && tar xzf --strip-components=1 v${OPENJPEG_VERSION}.tar.gz \
     && cd openjpeg-${OPENJPEG_VERSION} \
     && cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
     && make -j$(nproc) \
@@ -158,7 +158,7 @@ ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN /buildscripts/bh-set-envvars.sh \
   && if test "${OPENDRIVE_VERSION}" != ""; then \
     wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
-    && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
+    && tar xzf --strip-components=1 ${OPENDRIVE_VERSION}.tar.gz \
     && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
     && cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
     && make -j$(nproc) \
