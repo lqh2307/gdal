@@ -18,20 +18,17 @@ RUN \
     # PROJ
     build-essential ca-certificates lsb-release \
     git cmake wget unzip libtool automake pkg-config sqlite3 \
-    zlib1g-dev libsqlite3-dev \
-    libcurl4-openssl-dev libtiff-dev \
+    zlib1g-dev libsqlite3-dev libcurl4-openssl-dev libtiff-dev \
     # GDAL
     curl autoconf \
     libopenjp2-7-dev libcairo2-dev \
     python3-dev python3-numpy python3-setuptools \
     libpng-dev libjpeg-dev libgif-dev \
-    liblzma-dev libgeos-dev \
-    libxml2-dev libexpat-dev libxerces-c-dev \
+    liblzma-dev libgeos-dev libxml2-dev libexpat-dev libxerces-c-dev \
     libnetcdf-dev libpoppler-dev libpoppler-private-dev \
     libspatialite-dev librasterlite2-dev \
     swig ant libhdf4-alt-dev libhdf5-serial-dev \
-    libfreexl-dev unixodbc-dev \
-    mdbtools-dev libwebp-dev \
+    libfreexl-dev unixodbc-dev mdbtools-dev libwebp-dev \
     liblcms2-dev libpcre3-dev libcrypto++-dev libfyba-dev \
     libkml-dev libmysqlclient-dev libogdi-dev \
     libcfitsio-dev openjdk-${JAVA_VERSION}-jdk libzstd-dev \
@@ -41,13 +38,12 @@ RUN \
     libbz2-dev libbrotli-dev libarchive-dev \
     libaec-dev libavif-dev \
     # TileDB
-    libspdlog-dev \
-    libmagic-dev \
+    libspdlog-dev libmagic-dev \
     # libjxl
     libgflags-dev \
-    && apt-get -y --purge autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get -y --purge autoremove \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
 ARG KEA_VERSION=1.5.2
@@ -233,8 +229,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 libmysqlclient21 libogdi4.1 libcfitsio10 \
     libzstd1 libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 \
-    libspdlog1.12 libmagic1t64 \
-    python-is-python3 python3-pil \
+    libspdlog1.12 libmagic1t64 python-is-python3 python3-pil \
     osmosis \
   # Install JRE with --no-install-recommends, otherwise it draws default-jre, which draws systemd, which fails to install when running the arm64v8/ubuntu:24.04 image on a 64bit host
   && apt-get -y install --no-install-recommends \
