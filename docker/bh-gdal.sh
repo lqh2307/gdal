@@ -24,20 +24,21 @@ export GDAL_CMAKE_EXTRA_OPTS=""
 if test "${GCC_ARCH}" != "x86_64"; then
   export GDAL_CMAKE_EXTRA_OPTS="${GDAL_CMAKE_EXTRA_OPTS} -DPDFIUM_INCLUDE_DIR="
 fi
+
 export JAVA_ARCH=""
 if test "${GCC_ARCH}" = "x86_64"; then
   export JAVA_ARCH="amd64";
 elif test "${GCC_ARCH}" = "aarch64"; then
   export JAVA_ARCH="arm64";
 fi
+
 if test "${JAVA_ARCH:-}" != ""; then
   export GDAL_CMAKE_EXTRA_OPTS="${GDAL_CMAKE_EXTRA_OPTS} -DBUILD_JAVA_BINDINGS=ON -DJAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-${JAVA_ARCH}"
 fi
-if echo "$WITH_FILEGDB" | grep -Eiq "^(y(es)?|1|true)$" ; then
-  ln -s /usr/local/FileGDB_API/lib/libFileGDBAPI.so /usr/lib/x86_64-linux-gnu
-  export GDAL_CMAKE_EXTRA_OPTS="${GDAL_CMAKE_EXTRA_OPTS} -DFileGDB_ROOT:PATH=/usr/local/FileGDB_API -DFileGDB_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libFileGDBAPI.so"
-  export LD_LIBRARY_PATH=/usr/local/FileGDB_API/lib:${LD_LIBRARY_PATH:-}
-fi
+
+ln -s /usr/local/FileGDB_API/lib/libFileGDBAPI.so /usr/lib/x86_64-linux-gnu
+export GDAL_CMAKE_EXTRA_OPTS="${GDAL_CMAKE_EXTRA_OPTS} -DFileGDB_ROOT:PATH=/usr/local/FileGDB_API -DFileGDB_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libFileGDBAPI.so"
+export LD_LIBRARY_PATH=/usr/local/FileGDB_API/lib:${LD_LIBRARY_PATH:-}
 
 mkdir -p build && cd build
 

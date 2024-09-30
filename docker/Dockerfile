@@ -198,12 +198,14 @@ RUN \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
 
-RUN /buildscripts/bh-proj.sh
+RUN \
+  /buildscripts/bh-proj.sh
 
 # Build GDAL
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
 
-RUN GDAL_REPOSITORY=lqh2307/gdal GDAL_VERSION=dev /buildscripts/bh-gdal.sh
+RUN \
+  GDAL_REPOSITORY=lqh2307/gdal GDAL_VERSION=dev /buildscripts/bh-gdal.sh
 
 # Build final image
 FROM ${TARGET_BASE_IMAGE} AS runner
@@ -216,10 +218,11 @@ ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 
 # Update distro
-RUN export DEBIAN_FRONTEND=noninteractive \
+RUN \
+  export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ dependencies
-    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates lsb-release \
+    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates lsb-release patchelf \
     # GDAL dependencies
     libopenjp2-7 libcairo2 python3-numpy libpng16-16 libjpeg-turbo8 libgif7 \
     liblzma5 libgeos3.12.1 libgeos-c1v5 libxml2 libexpat1 \
@@ -229,8 +232,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 libmysqlclient21 libogdi4.1 libcfitsio10 \
     libzstd1 libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 \
-    libspdlog1.12 libmagic1t64 python-is-python3 python3-pil \
-    osmosis \
+    libspdlog1.12 libmagic1t64 python-is-python3 python3-pil osmosis \
   # Install JRE with --no-install-recommends, otherwise it draws default-jre, which draws systemd, which fails to install when running the arm64v8/ubuntu:24.04 image on a 64bit host
   && apt-get -y install --no-install-recommends \
     openjdk-${JAVA_VERSION}-jre \
@@ -264,4 +266,5 @@ COPY --from=builder  /build/usr/include/ /usr/include/
 COPY --from=builder  /build_gdal_python/usr/ /usr/
 COPY --from=builder  /build_gdal_version_changing/usr/ /usr/
 
-RUN ldconfig
+RUN \
+  ldconfig
