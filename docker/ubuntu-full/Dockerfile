@@ -118,23 +118,6 @@ RUN \
   && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
-# Build openjpeg
-ARG OPENJPEG_VERSION=2.5.2
-RUN \
-  wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
-  && tar xzf v${OPENJPEG_VERSION}.tar.gz \
-  && cd openjpeg-${OPENJPEG_VERSION} \
-  && cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
-  && make -j$(nproc) \
-  && make install \
-  && mkdir -p /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
-  && rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* \
-  && mv -f /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
-  && cp -rf -P /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
-  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
-  && cd .. \
-  && rm -rf openjpeg-${OPENJPEG_VERSION} v${OPENJPEG_VERSION}.tar.gz
-
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN \
