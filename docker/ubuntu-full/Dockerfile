@@ -7,67 +7,50 @@ FROM ${BASE_IMAGE} AS builder
 ARG http_proxy=http://10.55.123.98:3333
 ARG https_proxy=http://10.55.123.98:3333
 
-COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
-
-ARG TARGET_ARCH=
-RUN /buildscripts/bh-set-envvars.sh \
-  && if test "${TARGET_ARCH}" != ""; then \
-    rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
-    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=amd64] http://security.ubuntu.com/ubuntu noble-security main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-updates main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
-    && dpkg --add-architecture ${TARGET_ARCH} \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y update && apt-get -y upgrade && apt-get -y install \
-      g++-13-${GCC_ARCH}-linux-gnu \
-    && ln -s ${GCC_ARCH}-linux-gnu-gcc-13 /usr/bin/${GCC_ARCH}-linux-gnu-gcc \
-    && ln -s ${GCC_ARCH}-linux-gnu-g++-13 /usr/bin/${GCC_ARCH}-linux-gnu-g++ \
-    && rm -rf /var/lib/apt/lists/*; \
-  fi
+ARG GCC_ARCH=x86_64
+ARG CMAKE_EXTRA_ARGS=
 
 # Setup build env for PROJ & GDAL
 ARG JAVA_VERSION=17
-RUN /buildscripts/bh-set-envvars.sh \
-  && export DEBIAN_FRONTEND=noninteractive \
+RUN \
+  export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ
     build-essential ca-certificates lsb-release \
     git cmake wget unzip libtool automake pkg-config sqlite3 \
-    zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} \
-    libcurl4-openssl-dev${APT_ARCH_SUFFIX} libtiff-dev${APT_ARCH_SUFFIX} \
+    zlib1g-dev libsqlite3-dev \
+    libcurl4-openssl-dev libtiff-dev \
     # GDAL
     curl autoconf \
-    libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
-    python3-dev${APT_ARCH_SUFFIX} python3-numpy${APT_ARCH_SUFFIX} python3-setuptools${APT_ARCH_SUFFIX} \
-    libpng-dev${APT_ARCH_SUFFIX} libjpeg-dev${APT_ARCH_SUFFIX} libgif-dev${APT_ARCH_SUFFIX} \
-    liblzma-dev${APT_ARCH_SUFFIX} libgeos-dev${APT_ARCH_SUFFIX} \
-    libxml2-dev${APT_ARCH_SUFFIX} libexpat-dev${APT_ARCH_SUFFIX} libxerces-c-dev${APT_ARCH_SUFFIX} \
-    libnetcdf-dev${APT_ARCH_SUFFIX} libpoppler-dev${APT_ARCH_SUFFIX} libpoppler-private-dev${APT_ARCH_SUFFIX} \
-    libspatialite-dev${APT_ARCH_SUFFIX} librasterlite2-dev${APT_ARCH_SUFFIX} \
-    swig ant libhdf4-alt-dev${APT_ARCH_SUFFIX} libhdf5-serial-dev${APT_ARCH_SUFFIX} \
-    libfreexl-dev${APT_ARCH_SUFFIX} unixodbc-dev${APT_ARCH_SUFFIX} \
-    mdbtools-dev${APT_ARCH_SUFFIX} libwebp-dev${APT_ARCH_SUFFIX} \
-    liblcms2-2 libpcre3-dev${APT_ARCH_SUFFIX} libcrypto++-dev${APT_ARCH_SUFFIX} libfyba-dev${APT_ARCH_SUFFIX} \
-    libkml-dev${APT_ARCH_SUFFIX} libmysqlclient-dev${APT_ARCH_SUFFIX} libogdi-dev${APT_ARCH_SUFFIX} \
-    libcfitsio-dev${APT_ARCH_SUFFIX} openjdk-${JAVA_VERSION}-jdk${APT_ARCH_SUFFIX} libzstd-dev${APT_ARCH_SUFFIX} \
-    libpq-dev${APT_ARCH_SUFFIX} libssl-dev${APT_ARCH_SUFFIX} libboost-dev${APT_ARCH_SUFFIX} \
-    libarmadillo-dev${APT_ARCH_SUFFIX} libopenexr-dev${APT_ARCH_SUFFIX} libheif-dev${APT_ARCH_SUFFIX} \
-    libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} \
-    libbz2-dev${APT_ARCH_SUFFIX} libbrotli-dev${APT_ARCH_SUFFIX} libarchive-dev${APT_ARCH_SUFFIX} \
-    libaec-dev${APT_ARCH_SUFFIX} libavif-dev${APT_ARCH_SUFFIX} \
+    libopenjp2-7-dev libcairo2-dev \
+    python3-dev python3-numpy python3-setuptools \
+    libpng-dev libjpeg-dev libgif-dev \
+    liblzma-dev libgeos-dev \
+    libxml2-dev libexpat-dev libxerces-c-dev \
+    libnetcdf-dev libpoppler-dev libpoppler-private-dev \
+    libspatialite-dev librasterlite2-dev \
+    swig ant libhdf4-alt-dev libhdf5-serial-dev \
+    libfreexl-dev unixodbc-dev \
+    mdbtools-dev libwebp-dev \
+    liblcms2-2 libpcre3-dev libcrypto++-dev libfyba-dev \
+    libkml-dev libmysqlclient-dev libogdi-dev \
+    libcfitsio-dev openjdk-${JAVA_VERSION}-jdk libzstd-dev \
+    libpq-dev libssl-dev libboost-dev \
+    libarmadillo-dev libopenexr-dev libheif-dev \
+    libdeflate-dev libblosc-dev liblz4-dev \
+    libbz2-dev libbrotli-dev libarchive-dev \
+    libaec-dev libavif-dev \
     # TileDB
-    libspdlog-dev${APT_ARCH_SUFFIX} \
-    libmagic-dev${APT_ARCH_SUFFIX} \
+    libspdlog-dev \
+    libmagic-dev \
+    # libjxl
+    libgflags-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
 ARG KEA_VERSION=1.5.2
-RUN /buildscripts/bh-set-envvars.sh \
-  && wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
+RUN \
+  wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
   && cd kealib-kealib-${KEA_VERSION} \
   && cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
@@ -83,8 +66,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
-RUN /buildscripts/bh-set-envvars.sh \
-  && wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
+RUN \
+  wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
   && tar xzf mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
   && cd mongo-c-driver-${MONGO_C_DRIVER_VERSION} \
   && mkdir -p build && cd build \
@@ -99,8 +82,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
-RUN /buildscripts/bh-set-envvars.sh \
-  && wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
+RUN \
+  wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
   && tar xzf r${MONGOCXX_VERSION}.tar.gz \
   && cd mongo-cxx-driver-r${MONGOCXX_VERSION} \
   && mkdir -p build && cd build \
@@ -117,8 +100,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 ARG TILEDB_VERSION=2.23.0
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
-RUN /buildscripts/bh-set-envvars.sh \
-  && wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
+RUN \
+  wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
   && tar xzf ${TILEDB_VERSION}.tar.gz \
   && cd TileDB-${TILEDB_VERSION} \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
@@ -135,8 +118,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 
 # Build openjpeg
 ARG OPENJPEG_VERSION=
-RUN /buildscripts/bh-set-envvars.sh \
-  && if test "${OPENJPEG_VERSION}" != ""; then \
+RUN \
+  if test "${OPENJPEG_VERSION}" != ""; then \
     wget -q https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
     && tar xzf v${OPENJPEG_VERSION}.tar.gz \
     && cd openjpeg-${OPENJPEG_VERSION} \
@@ -154,8 +137,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
-RUN /buildscripts/bh-set-envvars.sh \
-  && if test "${OPENDRIVE_VERSION}" != ""; then \
+RUN \
+  if test "${OPENDRIVE_VERSION}" != ""; then \
     wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
     && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
     && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
@@ -171,8 +154,8 @@ RUN /buildscripts/bh-set-envvars.sh \
 
 #Build File Geodatabase
 ARG WITH_FILEGDB=
-RUN /buildscripts/bh-set-envvars.sh \
-  && if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then \
+RUN \
+  if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then \
     wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
     && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
     && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
@@ -184,8 +167,8 @@ RUN /buildscripts/bh-set-envvars.sh \
   fi
 
 # Build libqb3
-RUN /buildscripts/bh-set-envvars.sh \
-  && git clone https://github.com/lucianpls/QB3.git --recursive \
+RUN \
+  git clone https://github.com/lucianpls/QB3.git --recursive \
   && cd QB3/QB3lib \
   && mkdir -p build && cd build \
   && cmake .. ${CMAKE_EXTRA_ARGS} -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
@@ -204,17 +187,13 @@ RUN if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
     && rm -rf install install-ubuntu2004-rev6677.tar.gz \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y update && apt-get -y upgrade && apt-get -y install \
-      liblcms2-dev${APT_ARCH_SUFFIX} \
+      liblcms2-dev \
     && rm -rf /var/lib/apt/lists/*; \
   fi
 
 # Build libjxl
-RUN /buildscripts/bh-set-envvars.sh \
-  && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
-    libgflags-dev${APT_ARCH_SUFFIX} \
-  && rm -rf /var/lib/apt/lists/* \
-  && git clone https://github.com/libjxl/libjxl.git --recursive \
+RUN \
+  git clone https://github.com/libjxl/libjxl.git --recursive \
   && cd libjxl \
   && mkdir -p build && cd build \
   && cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
@@ -228,19 +207,19 @@ RUN /buildscripts/bh-set-envvars.sh \
 ARG ARROW_VERSION=16.1.0-1
 # ARROW_SOVERSION to be updated in the "Build final image" section too
 ARG ARROW_SOVERSION=1600
-RUN /buildscripts/bh-set-envvars.sh \
-  && export DEBIAN_FRONTEND=noninteractive \
+RUN \
+  export DEBIAN_FRONTEND=noninteractive \
   && wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y install \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y update && apt-get -y upgrade && apt-get -y install \
-    libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-    libparquet${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-    libarrow-dataset${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-    libarrow-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-    libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-    libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-    libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
+    libarrow${ARROW_SOVERSION} \
+    libparquet${ARROW_SOVERSION} \
+    libarrow-dataset${ARROW_SOVERSION} \
+    libarrow-dev=${ARROW_VERSION} \
+    libparquet-dev=${ARROW_VERSION} \
+    libarrow-acero-dev=${ARROW_VERSION} \
+    libarrow-dataset-dev=${ARROW_VERSION} \
   && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG WITH_DEBUG_SYMBOLS=no
@@ -253,21 +232,22 @@ COPY ./bh-proj.sh /buildscripts/bh-proj.sh
 # We want 2 separate steps for incremental builds where grids are refreshed
 # only when the content of cdn.proj.org has changed, independently if PROJ master
 # itself has changed.
-RUN /buildscripts/bh-set-envvars.sh \
-  && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
+RUN \
+  DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
 
 # Build PROJ
 ARG PROJ_VERSION=master
-RUN /buildscripts/bh-set-envvars.sh && /buildscripts/bh-proj.sh
+RUN /buildscripts/bh-proj.sh
 
 # Build GDAL
 ARG GDAL_REPOSITORY=lqh2307/gdal
 ARG GDAL_VERSION=dev
 
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
-RUN /buildscripts/bh-set-envvars.sh && /buildscripts/bh-gdal.sh
+
+RUN /buildscripts/bh-gdal.sh
 
 # Build final image
 FROM ${TARGET_BASE_IMAGE} AS runner
