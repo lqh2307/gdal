@@ -161,6 +161,8 @@ class MBTilesDataset final : public GDALPamDataset,
     bool m_bWriteBounds;
     CPLString m_osBounds;
     CPLString m_osCenter;
+    bool m_bMetadataUniqueIndex;
+    bool m_bTilesUniqueIndex;
     bool m_bWriteMinMaxZoom;
     MBTilesDataset *poMainDS;
     bool m_bGeoTransformValid;
@@ -883,6 +885,8 @@ MBTilesDataset::MBTilesDataset()
 {
     m_bWriteBounds = true;
     m_bWriteMinMaxZoom = true;
+    m_bMetadataUniqueIndex = false;
+    m_bTilesUniqueIndex = false;
     poMainDS = nullptr;
     m_nOverviewCount = 0;
     hDS = nullptr;
@@ -1257,6 +1261,18 @@ CPLErr MBTilesDataset::FinalizeRasterRegistration()
                             dfGDALMaxX, dfGDALMaxY);
 
         m_papoOverviewDS[m_nZoomLevel - 1 - i] = poOvrDS;
+    }
+
+    if (m_bMetadataUniqueIndex)
+    {
+        char *pszSQL = "CREATE UNIQUE INDEX metadata_unique_index ON metadata (name)";
+        sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
+    }
+
+    if (m_bTilesUniqueIndex)
+    {
+        char *pszSQL = "CREATE UNIQUE INDEX tiles_unique_index ON tiles (zoom_level, tile_column, tile_row)";
+        sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
     }
 
     return CE_None;
@@ -3016,6 +3032,10 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
                                   "WRITE_BOUNDS", true);
     m_bWriteMinMaxZoom = CPLFetchBool(const_cast<const char **>(papszOptions),
                                       "WRITE_MINMAXZOOM", true);
+    m_bMetadataUniqueIndex = CPLFetchBool(const_cast<const char **>(papszOptions),
+                                      "METADATA_UNIQUE_INDEX", true);
+    m_bTilesUniqueIndex = CPLFetchBool(const_cast<const char **>(papszOptions),
+                                      "TILES_UNIQUE_INDEX", true);
     int nBlockSize = std::max(
         64, std::min(8192, atoi(CSLFetchNameValueDef(
                                papszOptions, "BLOCKSIZE",
@@ -3713,7 +3733,6 @@ CPLErr MBTilesDataset::IBuildOverviews(
 /************************************************************************/
 
 void GDALRegister_MBTiles()
-
 {
     if (!GDAL_CHECK_VERSION("MBTiles driver"))
         return;
@@ -3831,6 +3850,10 @@ void GDALRegister_MBTiles()
         "description='Override default value for bounds metadata item'/>"
         "  <Option name='CENTER' scope='raster,vector' type='string' "
         "description='Override default value for center metadata item'/>"
+        "  <Option name='METADATA_UNIQUE_INDEX' scope='raster,vector' type='boolean' "
+        "description='Create unique index for metadata table' default='NO'/>"
+        "  <Option name='TILES_UNIQUE_INDEX' scope='raster,vector' type='boolean' "
+        "description='Create unique index for tiles table' default='NO'/>"
 #ifdef HAVE_MVT_WRITE_SUPPORT
         MVT_MBTILES_COMMON_DSCO
 #endif
