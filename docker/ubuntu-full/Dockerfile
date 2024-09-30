@@ -38,7 +38,7 @@ RUN /buildscripts/bh-set-envvars.sh \
     build-essential ca-certificates lsb-release \
     git cmake wget unzip libtool automake \
     zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} \
-    pkg-config sqlite3 libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
+    pkg-config libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
     libtiff-dev${APT_ARCH_SUFFIX} \
     # GDAL
     libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
@@ -60,7 +60,10 @@ RUN /buildscripts/bh-set-envvars.sh \
     libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} \
     libbz2-dev${APT_ARCH_SUFFIX} libbrotli-dev${APT_ARCH_SUFFIX} libarchive-dev${APT_ARCH_SUFFIX} \
     libaec-dev${APT_ARCH_SUFFIX} libavif-dev${APT_ARCH_SUFFIX} \
-  && rm -rf /var/lib/apt/lists/*
+    # TileDB
+    libspdlog-dev${APT_ARCH_SUFFIX} \
+    libmagic-dev${APT_ARCH_SUFFIX} \
+    && rm -rf /var/lib/apt/lists/*
 
 # Build likbkea
 ARG KEA_VERSION=1.5.2
@@ -116,11 +119,6 @@ ARG TILEDB_VERSION=2.23.0
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 RUN /buildscripts/bh-set-envvars.sh \
-  && export DEBIAN_FRONTEND=noninteractive \
-  && apt-get -y update && apt-get -y upgrade && apt-get -y install \
-    libspdlog-dev${APT_ARCH_SUFFIX} \
-    libmagic-dev${APT_ARCH_SUFFIX} \
-  && rm -rf /var/lib/apt/lists/* \
   && wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
   && tar xzf ${TILEDB_VERSION}.tar.gz \
   && cd TileDB-${TILEDB_VERSION} \
