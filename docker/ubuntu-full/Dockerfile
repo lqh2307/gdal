@@ -99,7 +99,7 @@ RUN \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build tiledb
-ARG TILEDB_VERSION=2.26.2
+ARG TILEDB_VERSION=2.23.0
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 RUN \
