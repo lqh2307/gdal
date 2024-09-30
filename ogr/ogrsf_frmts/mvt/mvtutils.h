@@ -41,8 +41,6 @@
     "  <Option name='NAME' type='string' description='Target layer name'/>"    \
     "  <Option name='DESCRIPTION' type='string' "                              \
     "description='A description of the layer'/>"                               \
-    "  <Option name='ATTRIBUTION' type='string' "                              \
-    "description='An attribution of the layer'/>"                              \
     "</LayerCreationOptionList>"
 
 #define MVT_MBTILES_PMTILES_COMMON_DSCO                                        \

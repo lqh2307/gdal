@@ -3309,6 +3309,8 @@ class OGRMVTWriterDataset final : public GDALDataset
     int m_nMVTVersion = 2;
     int m_nBuffer = 5 * knDEFAULT_EXTENT / 256;
     bool m_bGZip = true;
+    bool m_bMetadataUniqueIndex = false;
+    bool m_bTilesUniqueIndex = false;
     mutable CPLWorkerThreadPool m_oThreadPool;
     bool m_bThreadPoolOK = false;
     mutable GIntBig m_nTempTiles = 0;
@@ -5323,6 +5325,18 @@ bool OGRMVTWriterDataset::CreateOutput()
 
     bRet &= GenerateMetadata(oSetLayers.size(), oMapLayerProps);
 
+    if (m_bMetadataUniqueIndex)
+    {
+        const char *pszSQLMetadataIndex = "CREATE UNIQUE INDEX metadata_unique_index ON metadata (name)";
+        sqlite3_exec(m_hDBMBTILES, pszSQLMetadataIndex, nullptr, nullptr, nullptr);
+    }
+
+    if (m_bTilesUniqueIndex)
+    {
+        const char *pszSQLTilesIndex = "CREATE UNIQUE INDEX tiles_unique_index ON tiles (zoom_level, tile_column, tile_row)";
+        sqlite3_exec(m_hDBMBTILES, pszSQLTilesIndex, nullptr, nullptr, nullptr);
+    }
+
     return bRet;
 }
 
@@ -6125,6 +6139,10 @@ GDALDataset *OGRMVTWriterDataset::Create(const char *pszFilename, int nXSize,
     poDS->m_osType =
         CSLFetchNameValueDef(papszOptions, "TYPE", poDS->m_osType.c_str());
     poDS->m_bGZip = CPLFetchBool(papszOptions, "COMPRESS", poDS->m_bGZip);
+    poDS->m_bMetadataUniqueIndex = CPLFetchBool(papszOptions, "METADATA_UNIQUE_INDEX",
+                                                 poDS->m_bMetadataUniqueIndex);
+    poDS->m_bTilesUniqueIndex = CPLFetchBool(papszOptions, "TILES_UNIQUE_INDEX",
+                                                 poDS->m_bTilesUniqueIndex);
     poDS->m_osBounds = CSLFetchNameValueDef(papszOptions, "BOUNDS", "");
     poDS->m_osCenter = CSLFetchNameValueDef(papszOptions, "CENTER", "");
     poDS->m_osExtension = CSLFetchNameValueDef(papszOptions, "TILE_EXTENSION",
@@ -6223,7 +6241,6 @@ GDALDataset *OGRMVTWriterDatasetCreate(const char *pszFilename, int nXSize,
 /************************************************************************/
 
 void RegisterOGRMVT()
-
 {
     if (GDALGetDriverByName("MVT") != nullptr)
         return;
@@ -6291,8 +6308,7 @@ void RegisterOGRMVT()
         "  <Option name='ATTRIBUTION' type='string' "
         "description='An attribution of the tileset'/>"
         "  <Option name='VERSION' type='string' "
-        "description='A version of the tileset' "
-        "default='1.0.0'/>"
+        "description='A version of the tileset' default='1.0.0'/>"
         "  <Option name='TYPE' type='string-select' description='Layer type' "
         "default='overlay'>"
         "    <Value>overlay</Value>"
@@ -6303,9 +6319,12 @@ void RegisterOGRMVT()
         "    <Value>MBTILES</Value>"
         "  </Option>"
         "  <Option name='TILE_EXTENSION' type='string' default='pbf' "
-        "description="
-        "'For tilesets as directories of files, extension of "
+        "description='For tilesets as directories of files, extension of "
         "tiles'/>" MVT_MBTILES_COMMON_DSCO
+        "  <Option name='METADATA_UNIQUE_INDEX' type='boolean' "
+        "description='Create unique index for metadata table' default='NO'/>"
+        "  <Option name='TILES_UNIQUE_INDEX' type='boolean' "
+        "description='Create unique index for tiles table' default='NO'/>"
         "  <Option name='BOUNDS' type='string' "
         "description='Override default value for bounds metadata item'/>"
         "  <Option name='CENTER' type='string' "
