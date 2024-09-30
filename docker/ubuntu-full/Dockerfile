@@ -129,7 +129,7 @@ RUN \
   && make install \
   && mkdir -p /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
   && rm -rf /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* \
-  && mv -f /usr/lib/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
+  && mv -f /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /usr/lib/${GCC_ARCH}-linux-gnu \
   && cp -rf -P /usr/lib/${GCC_ARCH}-linux-gnu/libopenjp2.so* /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu \
   && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && cd .. \
