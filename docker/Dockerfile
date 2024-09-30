@@ -16,7 +16,7 @@ RUN \
   export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ
-    build-essential ca-certificates lsb-release \
+    build-essential ca-certificates lsb-release patchelf \
     git cmake wget unzip libtool automake pkg-config sqlite3 \
     zlib1g-dev libsqlite3-dev libcurl4-openssl-dev libtiff-dev \
     # GDAL
@@ -222,7 +222,7 @@ RUN \
   export DEBIAN_FRONTEND=noninteractive \
   && apt-get -y update && apt-get -y upgrade && apt-get -y install \
     # PROJ dependencies
-    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates lsb-release patchelf \
+    libsqlite3-0 libtiff6 libcurl4 wget curl unzip ca-certificates lsb-release \
     # GDAL dependencies
     libopenjp2-7 libcairo2 python3-numpy libpng16-16 libjpeg-turbo8 libgif7 \
     liblzma5 libgeos3.12.1 libgeos-c1v5 libxml2 libexpat1 \
