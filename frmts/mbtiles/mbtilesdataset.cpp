@@ -3033,9 +3033,9 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
     m_bWriteMinMaxZoom = CPLFetchBool(const_cast<const char **>(papszOptions),
                                       "WRITE_MINMAXZOOM", true);
     m_bMetadataUniqueIndex = CPLFetchBool(const_cast<const char **>(papszOptions),
-                                      "METADATA_UNIQUE_INDEX", true);
+                                      "METADATA_UNIQUE_INDEX", false);
     m_bTilesUniqueIndex = CPLFetchBool(const_cast<const char **>(papszOptions),
-                                      "TILES_UNIQUE_INDEX", true);
+                                      "TILES_UNIQUE_INDEX", false);
     int nBlockSize = std::max(
         64, std::min(8192, atoi(CSLFetchNameValueDef(
                                papszOptions, "BLOCKSIZE",
