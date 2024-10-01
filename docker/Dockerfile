@@ -4,8 +4,8 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 FROM ${BASE_IMAGE} AS builder
 
 # set proxy
-# ARG http_proxy=http://10.55.123.98:3333
-# ARG https_proxy=http://10.55.123.98:3333
+ARG http_proxy=http://10.55.123.98:3333
+ARG https_proxy=http://10.55.123.98:3333
 
 ARG GCC_ARCH=x86_64
 ARG CMAKE_EXTRA_ARGS=
@@ -211,8 +211,8 @@ RUN \
 FROM ${TARGET_BASE_IMAGE} AS runner
 
 # set proxy
-# ARG http_proxy=http://10.55.123.98:3333
-# ARG https_proxy=http://10.55.123.98:3333
+ARG http_proxy=http://10.55.123.98:3333
+ARG https_proxy=http://10.55.123.98:3333
 
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
