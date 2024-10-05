@@ -45,7 +45,6 @@ mkdir -p build && cd build
 cmake .. \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DGDAL_FIND_PACKAGE_PROJ_MODE=MODULE \
-  -DBUILD_TESTING=OFF \
   -DPROJ_INCLUDE_DIR=/build/usr/local/include \
   -DPROJ_LIBRARY=/build/usr/local/lib/libinternalproj.so \
   -DGDAL_ENABLE_PLUGINS=ON \

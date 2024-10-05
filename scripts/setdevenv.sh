@@ -34,7 +34,6 @@ GDAL_PYTHONPATH="$CUR_DIR/swig/python"
 
 if [[ ! ${PATH} =~ $CUR_DIR/apps ]]; then
     export PATH="$CUR_DIR/apps:$PATH"
-    export PATH="$CUR_DIR/perftests:$PATH"
     export PATH="$GDAL_PYTHONPATH/bin:$PATH"
     export PATH="$GDAL_ROOT/swig/python/gdal-utils/scripts:$PATH"
     echo "Setting PATH=$PATH"
