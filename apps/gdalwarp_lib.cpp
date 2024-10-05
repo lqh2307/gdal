@@ -1120,6 +1120,8 @@ static bool CanUseBuildVRT(int nSrcCount, GDALDatasetH *pahSrcDS)
     return bCanUseBuildVRT;
 }
 
+#ifdef HAVE_TIFF
+
 /************************************************************************/
 /*                      DealWithCOGOptions()                            */
 /************************************************************************/
@@ -1224,6 +1226,8 @@ static bool DealWithCOGOptions(CPLStringList &aosCreateOptions, int nSrcCount,
     return bRet;
 }
 
+#endif
+
 /************************************************************************/
 /*                      GDALWarpIndirect()                              */
 /************************************************************************/
@@ -1289,11 +1293,14 @@ static GDALDatasetH GDALWarpIndirect(const char *pszDest, GDALDriverH hDriver,
         if ((nBands == 1 ||
              (nBands > 1 && GDALGetRasterColorInterpretation(GDALGetRasterBand(
                                 pahSrcDS[0], nBands)) != GCI_AlphaBand)) &&
-            (psOptions->bEnableDstAlpha ||
-             (EQUAL(psOptions->osFormat.c_str(), "COG") &&
-              COGHasWarpingOptions(aosCreateOptions.List()) &&
-              CPLTestBool(
-                  aosCreateOptions.FetchNameValueDef("ADD_ALPHA", "YES")))))
+            (psOptions->bEnableDstAlpha
+#ifdef HAVE_TIFF
+             || (EQUAL(psOptions->osFormat.c_str(), "COG") &&
+                 COGHasWarpingOptions(aosCreateOptions.List()) &&
+                 CPLTestBool(
+                     aosCreateOptions.FetchNameValueDef("ADD_ALPHA", "YES")))
+#endif
+                 ))
         {
             aosArgv.AddString("-addalpha");
         }
@@ -1309,6 +1316,7 @@ static GDALDatasetH GDALWarpIndirect(const char *pszDest, GDALDriverH hDriver,
     double dfStartPctCreateCopy = 0.0;
     if (hTmpDS == nullptr)
     {
+#ifdef HAVE_TIFF
         // Special processing for COG output. As some of its options do
         // on-the-fly reprojection, take them into account now, and remove them
         // from the COG creation stage.
@@ -1318,6 +1326,7 @@ static GDALDatasetH GDALWarpIndirect(const char *pszDest, GDALDriverH hDriver,
         {
             return nullptr;
         }
+#endif
 
         // Materialize a temporary GeoTIFF with the result of the warp
         psOptions->osFormat = "GTiff";
@@ -2817,8 +2826,17 @@ static GDALDatasetH GDALWarpDirect(const char *pszDest, GDALDatasetH hDstDS,
 
             if (dfTargetRatio > 1.0)
             {
-                int iOvr = -1;
-                for (; iOvr < nOvCount - 1; iOvr++)
+                // Note: keep this logic for overview selection in sync between
+                // gdalwarp_lib.cpp and rasterio.cpp
+                const char *pszOversampligThreshold = CPLGetConfigOption(
+                    "GDALWARP_OVERSAMPLING_THRESHOLD", nullptr);
+                const double dfOversamplingThreshold =
+                    pszOversampligThreshold ? CPLAtof(pszOversampligThreshold)
+                                            : 1.0;
+
+                int iBestOvr = -1;
+                double dfBestRatio = 0;
+                for (int iOvr = -1; iOvr < nOvCount; iOvr++)
                 {
                     const double dfOvrRatio =
                         iOvr < 0
@@ -2827,18 +2845,27 @@ static GDALDatasetH GDALWarpDirect(const char *pszDest, GDALDatasetH hDstDS,
                                   poSrcDS->GetRasterBand(1)
                                       ->GetOverview(iOvr)
                                       ->GetXSize();
-                    const double dfNextOvrRatio =
-                        static_cast<double>(poSrcDS->GetRasterXSize()) /
-                        poSrcDS->GetRasterBand(1)
-                            ->GetOverview(iOvr + 1)
-                            ->GetXSize();
-                    if (dfOvrRatio < dfTargetRatio &&
-                        dfNextOvrRatio > dfTargetRatio)
+
+                    // Is it nearly the requested factor and better (lower) than
+                    // the current best factor?
+                    // Use an epsilon because of numerical instability.
+                    constexpr double EPSILON = 1e-1;
+                    if (dfOvrRatio >=
+                            dfTargetRatio * dfOversamplingThreshold + EPSILON ||
+                        dfOvrRatio <= dfBestRatio)
+                    {
+                        continue;
+                    }
+
+                    iBestOvr = iOvr;
+                    dfBestRatio = dfOvrRatio;
+                    if (std::abs(dfTargetRatio - dfOvrRatio) < EPSILON)
+                    {
                         break;
-                    if (fabs(dfOvrRatio - dfTargetRatio) < 1e-1)
-                        break;
+                    }
                 }
-                iOvr += (psOptions->nOvLevel - OVR_LEVEL_AUTO);
+                const int iOvr =
+                    iBestOvr + (psOptions->nOvLevel - OVR_LEVEL_AUTO);
                 if (iOvr >= 0)
                 {
                     CPLDebug("WARP", "Selecting overview level %d for %s", iOvr,
