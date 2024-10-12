@@ -167,7 +167,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
     && for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
 
 # Build openjpeg
-ARG OPENJPEG_VERSION=
+ARG OPENJPEG_VERSION=2.5.2
 RUN . /buildscripts/bh-set-envvars.sh \
     && if test "${OPENJPEG_VERSION}" != ""; then ( \
     curl -LO -fsS https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
@@ -208,7 +208,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
 
 #Build File Geodatabase
 
-ARG WITH_FILEGDB=
+ARG WITH_FILEGDB=yes
 RUN . /buildscripts/bh-set-envvars.sh \
   && if echo "$WITH_FILEGDB" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
   curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
@@ -321,10 +321,10 @@ RUN --mount=type=cache,id=ubuntu-full-proj,target=$HOME/.cache \
     && /buildscripts/bh-proj.sh
 
 # Build GDAL
-ARG GDAL_VERSION=master
+ARG GDAL_VERSION=1.0.0
 ARG GDAL_RELEASE_DATE
 ARG GDAL_BUILD_IS_RELEASE
-ARG GDAL_REPOSITORY=OSGeo/gdal
+ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN --mount=type=cache,id=ubuntu-full-gdal,target=$HOME/.cache \
