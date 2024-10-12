@@ -3289,15 +3289,18 @@ class OGRMVTWriterDataset final : public GDALDataset
     double m_dfSimplificationMaxZoom = 0.0;
     CPLJSONDocument m_oConf;
     unsigned m_nExtent = knDEFAULT_EXTENT;
-    int m_nMetadataVersion = 2;
     int m_nMVTVersion = 2;
     int m_nBuffer = 5 * knDEFAULT_EXTENT / 256;
     bool m_bGZip = true;
+    bool m_bMetadataUniqueIndex = false;
+    bool m_bTilesUniqueIndex = false;
     mutable CPLWorkerThreadPool m_oThreadPool;
     bool m_bThreadPoolOK = false;
     mutable GIntBig m_nTempTiles = 0;
+    CPLString m_osVersion{"1.0.0"};
     CPLString m_osName;
     CPLString m_osDescription;
+    CPLString m_osAttribution;
     CPLString m_osType{"overlay"};
     sqlite3 *m_hDBMBTILES = nullptr;
     OGREnvelope m_oEnvelope;
@@ -5306,6 +5309,18 @@ bool OGRMVTWriterDataset::CreateOutput()
 
     bRet &= GenerateMetadata(oSetLayers.size(), oMapLayerProps);
 
+    if (m_bMetadataUniqueIndex)
+    {
+        const char *pszSQLMetadataIndex = "CREATE UNIQUE INDEX metadata_unique_index ON metadata (name)";
+        sqlite3_exec(m_hDBMBTILES, pszSQLMetadataIndex, nullptr, nullptr, nullptr);
+    }
+
+    if (m_bTilesUniqueIndex)
+    {
+        const char *pszSQLTilesIndex = "CREATE UNIQUE INDEX tiles_unique_index ON tiles (zoom_level, tile_column, tile_row)";
+        sqlite3_exec(m_hDBMBTILES, pszSQLTilesIndex, nullptr, nullptr, nullptr);
+    }
+
     return bRet;
 }
 
@@ -5448,7 +5463,8 @@ bool OGRMVTWriterDataset::GenerateMetadata(
 
     WriteMetadataItem("name", m_osName, m_hDBMBTILES, oRoot);
     WriteMetadataItem("description", m_osDescription, m_hDBMBTILES, oRoot);
-    WriteMetadataItem("version", m_nMetadataVersion, m_hDBMBTILES, oRoot);
+    WriteMetadataItem("attribution", m_osAttribution, m_hDBMBTILES, oRoot);
+    WriteMetadataItem("version", m_osVersion, m_hDBMBTILES, oRoot);
     WriteMetadataItem("minzoom", m_nMinZoom, m_hDBMBTILES, oRoot);
     WriteMetadataItem("maxzoom", m_nMaxZoom, m_hDBMBTILES, oRoot);
     WriteMetadataItem("center", !m_osCenter.empty() ? m_osCenter : osCenter,
@@ -6096,17 +6112,21 @@ GDALDataset *OGRMVTWriterDataset::Create(const char *pszFilename, int nXSize,
                          papszOptions, "MAX_FEATURES",
                          CPLSPrintf("%u", poDS->m_nMaxFeatures)))));
 
-    poDS->m_osName =
-        CSLFetchNameValueDef(papszOptions, "NAME", CPLGetBasename(pszFilename));
+    poDS->m_osName = CSLFetchNameValueDef(papszOptions, "NAME",
+                                                 CPLGetBasename(pszFilename));
     poDS->m_osDescription = CSLFetchNameValueDef(papszOptions, "DESCRIPTION",
                                                  poDS->m_osDescription.c_str());
-    poDS->m_osType =
-        CSLFetchNameValueDef(papszOptions, "TYPE", poDS->m_osType.c_str());
+    poDS->m_osAttribution = CSLFetchNameValueDef(papszOptions, "ATTRIBUTION",
+                                                 CPLGetBasename(pszFilename));
+    poDS->m_osVersion = CSLFetchNameValueDef(papszOptions, "VERSION",
+                                                 poDS->m_osVersion.c_str());
+    poDS->m_osType = CSLFetchNameValueDef(papszOptions, "TYPE",
+                                                 poDS->m_osType.c_str());
     poDS->m_bGZip = CPLFetchBool(papszOptions, "COMPRESS", poDS->m_bGZip);
     poDS->m_osBounds = CSLFetchNameValueDef(papszOptions, "BOUNDS", "");
     poDS->m_osCenter = CSLFetchNameValueDef(papszOptions, "CENTER", "");
     poDS->m_osExtension = CSLFetchNameValueDef(papszOptions, "TILE_EXTENSION",
-                                               poDS->m_osExtension);
+                                                 poDS->m_osExtension);
 
     const char *pszTilingScheme =
         CSLFetchNameValue(papszOptions, "TILING_SCHEME");
@@ -6266,6 +6286,10 @@ void RegisterOGRMVT()
         "  <Option name='NAME' type='string' description='Tileset name'/>"
         "  <Option name='DESCRIPTION' type='string' "
         "description='A description of the tileset'/>"
+        "  <Option name='ATTRIBUTION' type='string' "
+        "description='An attribution of the tileset'/>"
+        "  <Option name='VERSION' type='string' "
+        "description='A version of the tileset' default='1.0.0'/>"
         "  <Option name='TYPE' type='string-select' description='Layer type' "
         "default='overlay'>"
         "    <Value>overlay</Value>"
@@ -6279,6 +6303,10 @@ void RegisterOGRMVT()
         "description="
         "'For tilesets as directories of files, extension of "
         "tiles'/>" MVT_MBTILES_COMMON_DSCO
+        "  <Option name='METADATA_UNIQUE_INDEX' type='boolean' "
+        "description='Create unique index for metadata table' default='NO'/>"
+        "  <Option name='TILES_UNIQUE_INDEX' type='boolean' "
+        "description='Create unique index for tiles table' default='NO'/>"
         "  <Option name='BOUNDS' type='string' "
         "description='Override default value for bounds metadata item'/>"
         "  <Option name='CENTER' type='string' "

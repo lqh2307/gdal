@@ -867,6 +867,8 @@ MBTilesDataset::MBTilesDataset()
 {
     m_bWriteBounds = true;
     m_bWriteMinMaxZoom = true;
+    m_bMetadataUniqueIndex = false;
+    m_bTilesUniqueIndex = false;
     poMainDS = nullptr;
     m_nOverviewCount = 0;
     hDS = nullptr;
@@ -1241,6 +1243,18 @@ CPLErr MBTilesDataset::FinalizeRasterRegistration()
                             dfGDALMaxX, dfGDALMaxY);
 
         m_papoOverviewDS[m_nZoomLevel - 1 - i] = poOvrDS;
+    }
+
+    if (m_bMetadataUniqueIndex)
+    {
+        char *pszSQL = "CREATE UNIQUE INDEX metadata_unique_index ON metadata (name)";
+        sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
+    }
+
+    if (m_bTilesUniqueIndex)
+    {
+        char *pszSQL = "CREATE UNIQUE INDEX tiles_unique_index ON tiles (zoom_level, tile_column, tile_row)";
+        sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
     }
 
     return CE_None;
@@ -3075,12 +3089,20 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
     sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
     sqlite3_free(pszSQL);
 
+    const char *pszAttribution = CSLFetchNameValueDef(
+        papszOptions, "ATTRIBUTION", CPLGetBasename(pszFilename));
+    pszSQL = sqlite3_mprintf(
+        "INSERT INTO metadata (name, value) VALUES ('attribution', '%q')",
+        pszAttribution);
+    sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
+    sqlite3_free(pszSQL);
+
     const char *pszTF = CSLFetchNameValue(papszOptions, "TILE_FORMAT");
     if (pszTF)
         m_eTF = GDALGPKGMBTilesGetTileFormat(pszTF);
 
     const char *pszVersion = CSLFetchNameValueDef(
-        papszOptions, "VERSION", (m_eTF == GPKG_TF_WEBP) ? "1.3" : "1.1");
+        papszOptions, "VERSION", "1.0.0");
     pszSQL = sqlite3_mprintf(
         "INSERT INTO metadata (name, value) VALUES ('version', '%q')",
         pszVersion);
@@ -3768,14 +3790,16 @@ void GDALRegister_MBTiles()
         "description='Tileset name'/>"
         "  <Option name='DESCRIPTION' scope='raster,vector' type='string' "
         "description='A description of the layer'/>"
+        "  <Option name='ATTRIBUTION' scope='raster,vector' type='string' "
+        "description='An attribution of the layer'/>"
         "  <Option name='TYPE' scope='raster,vector' type='string-select' "
         "description='Layer type' default='overlay'>"
         "    <Value>overlay</Value>"
         "    <Value>baselayer</Value>"
         "  </Option>"
-        "  <Option name='VERSION' scope='raster' type='string' "
-        "description='The version of the tileset, as a plain number' "
-        "default='1.1'/>"
+        "  <Option name='VERSION' scope='raster,vector' type='string' "
+        "description='A version of the tileset' "
+        "default='1.0.0'/>"
         "  <Option name='BLOCKSIZE' scope='raster' type='int' "
         "description='Block size in pixels' default='256' min='64' "
         "max='8192'/>" COMPRESSION_OPTIONS
@@ -3805,6 +3829,10 @@ void GDALRegister_MBTiles()
         "description='Override default value for bounds metadata item'/>"
         "  <Option name='CENTER' scope='raster,vector' type='string' "
         "description='Override default value for center metadata item'/>"
+        "  <Option name='METADATA_UNIQUE_INDEX' scope='raster,vector' type='boolean' "
+        "description='Create unique index for metadata table' default='NO'/>"
+        "  <Option name='TILES_UNIQUE_INDEX' scope='raster,vector' type='boolean' "
+        "description='Create unique index for tiles table' default='NO'/>"
 #ifdef HAVE_MVT_WRITE_SUPPORT
         MVT_MBTILES_COMMON_DSCO
 #endif
