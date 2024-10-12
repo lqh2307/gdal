@@ -167,7 +167,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
     && for i in /build_thirdparty/usr/bin/*; do strip -s $i 2>/dev/null || /bin/true; done
 
 # Build openjpeg
-ARG OPENJPEG_VERSION=2.5.2
+ARG OPENJPEG_VERSION=2.5.0
 RUN . /buildscripts/bh-set-envvars.sh \
     && if test "${OPENJPEG_VERSION}" != ""; then ( \
     curl -LO -fsS https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VERSION}.tar.gz \
