@@ -333,7 +333,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
@@ -343,7 +343,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG WITH_DEBUG_SYMBOLS=no
 
@@ -404,13 +404,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   # Install Arrow C++
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
-  && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y --purge autoremove \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
