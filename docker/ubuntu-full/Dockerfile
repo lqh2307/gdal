@@ -192,7 +192,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
   && patch -p1 < /buildscripts/tiledb-cmake-ccache.patch \
   && mkdir build_cmake \
   && cd build_cmake \
-  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF  -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE  -DOPENSSL_INCLUDE_DIR=/usr/include -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/${GCC_ARCH}-linux-gnu/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/lib/${GCC_ARCH}-linux-gnu/libssl.so \
+  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
@@ -329,7 +329,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
@@ -339,7 +339,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG WITH_DEBUG_SYMBOLS=no
 
@@ -400,7 +400,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   # Install Arrow C++
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
@@ -408,7 +408,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libarrow-dataset${ARROW_SOVERSION} \
   && apt-get -y --purge autoremove \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+  && rm -rf /var/lib/apt/lists/* ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG PROJ_INSTALL_PREFIX=/usr/local
 
