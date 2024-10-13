@@ -3,17 +3,17 @@ ARG TARGET_BASE_IMAGE=ubuntu:24.04
 
 FROM ${BASE_IMAGE} AS builder
 
-ENV HOME=/root
-
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG TARGET_ARCH=
+ENV HOME=/root
 
 COPY bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
 RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
   && echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
+
+ARG TARGET_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   /buildscripts/bh-set-envvars.sh \
@@ -327,7 +327,6 @@ RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
 
 # Install Arrow C++
 ARG ARROW_VERSION=16.1.0-1
-# ARROW_SOVERSION to be updated in the "Build final image" section too
 ARG ARROW_SOVERSION=1600
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -379,10 +378,9 @@ FROM ${TARGET_BASE_IMAGE} AS runner
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Update distro
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
-
-# Update distro
 ARG TARGET_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -417,17 +415,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder  /build_thirdparty/usr/ /usr/
-
 ARG PROJ_INSTALL_PREFIX=/usr/local
 
+COPY --from=builder  /build_thirdparty/usr/ /usr/
 COPY --from=builder  /tmp/proj_grids/* ${PROJ_INSTALL_PREFIX}/share/proj/
-
 COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/share/proj/ ${PROJ_INSTALL_PREFIX}/share/proj/
 COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/include/ ${PROJ_INSTALL_PREFIX}/include/
 COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/bin/ ${PROJ_INSTALL_PREFIX}/bin/
 COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/lib/ ${PROJ_INSTALL_PREFIX}/lib/
-
 COPY --from=builder  /build/usr/share/java /usr/share/java
 COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
 COPY --from=builder  /build/usr/include/ /usr/include/
