@@ -69,7 +69,6 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
   /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
-  && rm -rf kealib-${KEA_VERSION}.zip \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
     rsync -ra "${RSYNC_REMOTE}/kealib/${GCC_ARCH}/" "${HOME}/.cache/"; \
@@ -94,7 +93,7 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
     ccache -s; \
   fi \
   && cd .. \
-  && rm -rf kealib-kealib-${KEA_VERSION} \
+  && rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip \
   && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
@@ -193,7 +192,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
   && patch -p1 < /buildscripts/tiledb-cmake-ccache.patch \
   && mkdir build_cmake \
   && cd build_cmake \
-  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
+  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF  -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE  -DOPENSSL_INCLUDE_DIR=/usr/include -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/${GCC_ARCH}-linux-gnu/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/lib/${GCC_ARCH}-linux-gnu/libssl.so \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
@@ -216,7 +215,6 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
   /buildscripts/bh-set-envvars.sh \
   curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
   && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
-  && rm -rf ${OPENDRIVE_VERSION}.tar.gz \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
     rsync -ra "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/" "${HOME}/.cache/"; \
@@ -242,12 +240,12 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
   && cp -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
   && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && cd .. \
-  && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION}
+  && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz
 
 # Build file-geodatabase
 RUN /buildscripts/bh-set-envvars.sh \
   curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && tar xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
   && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
   && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
   && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
@@ -288,7 +286,7 @@ RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   curl -LO -fsS https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
-  && tar -xzf install-ubuntu2004-rev6677.tar.gz \
+  && tar xzf install-ubuntu2004-rev6677.tar.gz \
   && mv install/lib/* /usr/lib/ \
   && mv install/include/* /usr/include/ \
   && rm -rf install-ubuntu2004-rev6677.tar.gz install
@@ -320,10 +318,8 @@ RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
     ccache -s; \
   fi \
-  && rm -rf /lib/${GCC_ARCH}-linux-gnu/libjxl*.a \
-  && rm -rf /build_thirdparty/lib/${GCC_ARCH}-linux-gnu/libjxl*.a \
   && cd ../.. \
-  && rm -rf libjxl
+  && rm -rf libjxl /lib/${GCC_ARCH}-linux-gnu/libjxl*.a /build_thirdparty/lib/${GCC_ARCH}-linux-gnu/libjxl*.a
 
 # Install Arrow C++
 ARG ARROW_VERSION=16.1.0-1
@@ -333,7 +329,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+    apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
@@ -343,7 +339,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+  && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG WITH_DEBUG_SYMBOLS=no
 
@@ -404,16 +400,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   # Install Arrow C++
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+    apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
-  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y --purge autoremove \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG PROJ_INSTALL_PREFIX=/usr/local
 
