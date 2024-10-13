@@ -11,14 +11,14 @@ ARG TARGET_ARCH=
 
 COPY bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
-RUN rm -f /etc/apt/apt.conf.d/docker-clean \
+RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
   && echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && if test "${TARGET_ARCH}" != ""; then \
-    rm -f /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
+    rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
     && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list \
     && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe" >> /etc/apt/sources.list \
     && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe" >> /etc/apt/sources.list \
@@ -38,10 +38,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ARG JAVA_VERSION=17
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y --fix-missing --no-install-recommends \
-    build-essential ca-certificates ccache git make ninja-build cmake wget unzip libtool automake patchelf rsync lsb-release \
+    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf rsync lsb-release \
     zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} pkg-config sqlite3 libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
     libtiff-dev${APT_ARCH_SUFFIX} libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
     python3-dev${APT_ARCH_SUFFIX} python3-numpy${APT_ARCH_SUFFIX} python3-setuptools${APT_ARCH_SUFFIX} \
@@ -66,10 +66,10 @@ ARG WITH_CCACHE
 # Build libkea
 ARG KEA_VERSION=1.5.2
 RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
-  && rm -f kealib-${KEA_VERSION}.zip \
+  && rm -rf kealib-${KEA_VERSION}.zip \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
     rsync -ra "${RSYNC_REMOTE}/kealib/${GCC_ARCH}/" "${HOME}/.cache/"; \
@@ -101,7 +101,7 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
 RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && mkdir mongo-c-driver \
   && curl -L -fsS https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
     | tar xz -C mongo-c-driver --strip-components=1 \
@@ -129,15 +129,14 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
     ccache -s; \
   fi \
   && cd ../.. \
-  && rm -rf mongo-c-driver \
-  && rm /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*.a \
+  && rm -rf mongo-c-driver /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*.a \
   && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
 RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && mkdir mongocxx \
   && curl -L -fsS https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
     | tar xz -C mongocxx --strip-components=1 \
@@ -173,10 +172,9 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
 ARG TILEDB_VERSION=2.23.0
 COPY tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
-# Commit from TileDB 2.27.
 COPY tiledb-cmake-ccache.patch /buildscripts/tiledb-cmake-ccache.patch
 RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
     rsync -ra "${RSYNC_REMOTE}/tiledb/${GCC_ARCH}/" "${HOME}/.cache/"; \
@@ -215,55 +213,50 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
-  && if test "${OPENDRIVE_VERSION}" != ""; then \
-    curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
-    && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
-    && rm -f ${OPENDRIVE_VERSION}.tar.gz \
-    && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-      echo "Downloading cache..."; \
-      rsync -ra "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/" "${HOME}/.cache/"; \
-      echo "Finished"; \
-    fi \
-    && if [ -n "${WITH_CCACHE:-}" ]; then \
-      ccache -M 100M; \
-    fi \
-    && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
-    && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr/ \
-    && ninja \
-    && ninja install \
-    && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-      echo "Uploading cache..."; \
-      rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/"; \
-      echo "Finished"; \
-    fi \
-    && if [ -n "${WITH_CCACHE:-}" ]; then \
-      ccache -s; \
-    fi \
-    && mkdir -p /build_thirdparty/usr/lib \
-    && cp -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
-    && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
-    && cd .. \
-    && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION}; \
-  fi
+  /buildscripts/bh-set-envvars.sh \
+  curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+  && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
+  && rm -rf ${OPENDRIVE_VERSION}.tar.gz \
+  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
+    echo "Downloading cache..."; \
+    rsync -ra "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    echo "Finished"; \
+  fi \
+  && if [ -n "${WITH_CCACHE:-}" ]; then \
+    ccache -M 100M; \
+  fi \
+  && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
+  && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=/usr/ \
+  && ninja \
+  && ninja install \
+  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
+    echo "Uploading cache..."; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/"; \
+    echo "Finished"; \
+  fi \
+  && if [ -n "${WITH_CCACHE:-}" ]; then \
+    ccache -s; \
+  fi \
+  && mkdir -p /build_thirdparty/usr/lib \
+  && cp -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
+  && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && cd .. \
+  && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION}
 
-#Build File Geodatabase
-ARG WITH_FILEGDB=yes
-RUN . /buildscripts/bh-set-envvars.sh \
-  && if echo "${WITH_FILEGDB}" | grep -Eiq "^(y(es)?|1|true)$"; then \
-    curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-    && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
-    && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
-    && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
-    && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
-    && cp /usr/local/FileGDB_API/include/* /usr/include \
-    && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz; \
-  fi
+# Build file-geodatabase
+RUN /buildscripts/bh-set-envvars.sh \
+  curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
+  && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
+  && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
+  && cp /usr/local/FileGDB_API/include/* /usr/include \
+  && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz
 
 # Build libqb3
 RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && git clone https://github.com/lucianpls/QB3.git \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
@@ -291,20 +284,18 @@ RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
   && cd ../../.. \
   && rm -rf QB3
 
-ARG WITH_PDFIUM=yes
+# Build pdfium
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  if echo "${WITH_PDFIUM}" | grep -Eiq "^(y(es)?|1|true)$"; then \
-    curl -LO -fsS https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
-    && tar -xzf install-ubuntu2004-rev6677.tar.gz \
-    && mv install/lib/* /usr/lib/ \
-    && mv install/include/* /usr/include/ \
-    && rm -rf install-ubuntu2004-rev6677.tar.gz install; \
-  fi
+  curl -LO -fsS https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
+  && tar -xzf install-ubuntu2004-rev6677.tar.gz \
+  && mv install/lib/* /usr/lib/ \
+  && mv install/include/* /usr/include/ \
+  && rm -rf install-ubuntu2004-rev6677.tar.gz install
 
 # Build libjxl
 RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && git clone https://github.com/libjxl/libjxl.git --recursive \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
@@ -329,8 +320,8 @@ RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
     ccache -s; \
   fi \
-  && rm -f /lib/${GCC_ARCH}-linux-gnu/libjxl*.a \
-  && rm -f /build_thirdparty/lib/${GCC_ARCH}-linux-gnu/libjxl*.a \
+  && rm -rf /lib/${GCC_ARCH}-linux-gnu/libjxl*.a \
+  && rm -rf /build_thirdparty/lib/${GCC_ARCH}-linux-gnu/libjxl*.a \
   && cd ../.. \
   && rm -rf libjxl
 
@@ -340,7 +331,7 @@ ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
     apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
@@ -353,7 +344,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
     libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-  && rm apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+  && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG WITH_DEBUG_SYMBOLS=no
 
@@ -361,14 +352,8 @@ ARG WITH_DEBUG_SYMBOLS=no
 ARG PROJ_DATUMGRID_LATEST_LAST_MODIFIED
 ARG PROJ_INSTALL_PREFIX=/usr/local
 COPY bh-proj.sh /buildscripts/bh-proj.sh
-# We build PROJ a first time, just to build the projsync utility if grids need
-# to be refreshed. We will rebuild just afterwards, but depending on the
-# PROJ_VERSION argument
-# We want 2 separate steps for incremental builds where grids are refreshed
-# only when the content of cdn.proj.org has changed, independently if PROJ master
-# itself has changed.
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
+  /buildscripts/bh-set-envvars.sh \
   && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
@@ -376,8 +361,7 @@ RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
 # Build PROJ
 ARG PROJ_VERSION=master
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
-  && /buildscripts/bh-proj.sh
+  /buildscripts/bh-set-envvars.sh && /buildscripts/bh-proj.sh
 
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
@@ -387,8 +371,7 @@ ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN --mount=type=cache,id=ubuntu-full-gdal,target=${HOME}/.cache \
-  . /buildscripts/bh-set-envvars.sh \
-  && /buildscripts/bh-gdal.sh
+  /buildscripts/bh-set-envvars.sh && /buildscripts/bh-gdal.sh
 
 
 # Build final image
@@ -399,8 +382,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 
-ARG TARGET_ARCH=
 # Update distro
+ARG TARGET_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   && apt-get update -y && apt-get upgrade -y \
@@ -409,24 +392,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libsqlite3-0 libtiff6 libcurl4 \
     wget curl unzip ca-certificates lsb-release \
   # GDAL dependencies
-    libopenjp2-7 libcairo2 python3-numpy \
-    libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
-    libxml2 libexpat1 \
-    libxerces-c3.2 libnetcdf-c++4-1 netcdf-bin libpoppler134 libspatialite8 librasterlite2-1 gpsbabel \
+    libopenjp2-7 libcairo2 python3-numpy libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
+    libxml2 libexpat1 libxerces-c3.2 libnetcdf-c++4-1 netcdf-bin libpoppler134 libspatialite8 librasterlite2-1 gpsbabel \
     libhdf4-0-alt libhdf5-103-1 libhdf5-cpp-103-1 poppler-utils libfreexl1 unixodbc mdbtools libwebp7 \
-    liblcms2-2 libpcre3 libcrypto++8 libfyba0 \
-    libkmlbase1 libkmlconvenience1 libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 \
-    libmysqlclient21 libogdi4.1 libcfitsio10 \
-    libzstd1 bash bash-completion libpq5 \
-    libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
-    libdeflate0 libblosc1 liblz4-1 \
-    libbrotli1 \
-    libarchive13 \
-    libaec0 \
-    libavif16 \
-    libspdlog1.12 libmagic1t64 \
-    python-is-python3 \
-    python3-pil \
+    liblcms2-2 libpcre3 libcrypto++8 libfyba0 libkmlbase1 libkmlconvenience1 libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 \
+    libmysqlclient21 libogdi4.1 libcfitsio10 libzstd1 bash bash-completion libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
+    libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
+    python-is-python3 python3-pil \
   && apt-get install -y --no-install-recommends \
     openjdk-"${JAVA_VERSION}"-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
@@ -440,7 +412,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
-  && rm apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+  && rm -rf apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get -y --purge autoremove \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
