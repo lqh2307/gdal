@@ -384,7 +384,7 @@ ARG ARROW_SOVERSION=1600
 ARG TARGET_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  && apt-get update -y && apt-get upgrade -y \
+  apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
   # PROJ dependencies
     libsqlite3-0 libtiff6 libcurl4 \
