@@ -5,6 +5,10 @@ FROM ${BASE_IMAGE} AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# set proxy
+ARG http_proxy=http://10.55.123.98:3333
+ARG https_proxy=http://10.55.123.98:3333
+
 ENV HOME=/root
 
 COPY bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
@@ -373,6 +377,10 @@ RUN --mount=type=cache,id=ubuntu-full-gdal,target=${HOME}/.cache \
 FROM ${TARGET_BASE_IMAGE} AS runner
 
 ARG DEBIAN_FRONTEND=noninteractive
+
+# set proxy
+ARG http_proxy=http://10.55.123.98:3333
+ARG https_proxy=http://10.55.123.98:3333
 
 # Update distro
 ARG JAVA_VERSION=17
