@@ -2,10 +2,6 @@
 
 set -e
 
-if test "${PROJ_VERSION}" = ""; then
-    PROJ_VERSION=master
-fi
-
 if test "${DESTDIR}" = ""; then
     DESTDIR=/build
 fi
@@ -13,50 +9,22 @@ fi
 set -eu
 
 mkdir proj
-curl -L -fsS "https://github.com/OSGeo/PROJ/archive/${PROJ_VERSION}.tar.gz" \
-    | tar xz -C proj --strip-components=1
 
-(
-    cd proj
-    export PROJ_DB_CACHE_PARAM=""
+curl -L -fsS "https://github.com/OSGeo/PROJ/archive/master.tar.gz" | tar xz -C proj --strip-components=1
 
-    if [ -n "${RSYNC_REMOTE:-}" ]; then
-        echo "Downloading cache..."
-        rsync -ra "${RSYNC_REMOTE}/proj/x86_64/" "$HOME/.cache/"
-        echo "Finished"
-    fi
-    if [ -n "${WITH_CCACHE:-}" ]; then
-        export CC="ccache x86_64-linux-gnu-gcc"
-        export CXX="ccache x86_64-linux-gnu-g++"
-        export PROJ_DB_CACHE_PARAM="-DPROJ_DB_CACHE_DIR=$HOME/.cache"
+cd proj
 
-        ccache -M 100M
-    fi
+export CFLAGS="-DPROJ_RENAME_SYMBOLS -O2 -g"
+export CXXFLAGS="-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2 -g"
 
-    export CFLAGS="-DPROJ_RENAME_SYMBOLS -O2 -g"
-    export CXXFLAGS="-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2 -g"
+cmake . \
+    -G Ninja \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DBUILD_TESTING=OFF
 
-    cmake . \
-        -G Ninja \
-        -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DBUILD_TESTING=OFF \
-        $PROJ_DB_CACHE_PARAM
-
-    ninja
-    DESTDIR="${DESTDIR}" ninja install
-
-    if [ -n "${RSYNC_REMOTE:-}" ]; then
-        echo "Uploading cache..."
-        rsync -ra --delete "$HOME/.cache/" "${RSYNC_REMOTE}/proj/x86_64/"
-        echo "Finished"
-    fi
-    if [ -n "${WITH_CCACHE:-}" ]; then
-        ccache -s
-        unset CC
-        unset CXX
-    fi
-)
+ninja
+DESTDIR="${DESTDIR}" ninja install
 
 rm -rf proj
 

@@ -11,8 +11,6 @@ ARG https_proxy=http://10.55.123.98:3333
 
 ENV HOME=/root
 
-COPY bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
-
 RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
   && echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
@@ -21,7 +19,6 @@ RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
 ARG JAVA_VERSION=17
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  /buildscripts/bh-set-envvars.sh \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y --fix-missing --no-install-recommends \
     build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf rsync lsb-release \
@@ -43,38 +40,18 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libbrotli-dev libarchive-dev libaec-dev libavif-dev \
     libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev
 
-ARG RSYNC_REMOTE
-ARG WITH_CCACHE
-
 # Build libkea
 ARG KEA_VERSION=1.5.2
 RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/kealib/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -M 100M; \
-  fi \
   && cd kealib-kealib-${KEA_VERSION} \
-  && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
+  && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial \
     -DHDF5_LIB_PATH=/usr/lib/x86_64-linux-gnu/hdf5/serial -DLIBKEA_WITH_GDAL=OFF \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/kealib/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && cd .. \
   && rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip \
   && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
@@ -83,33 +60,15 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
 RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && mkdir mongo-c-driver \
-  && curl -L -fsS https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
-    | tar xz -C mongo-c-driver --strip-components=1 \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/mongo-c-driver/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -M 100M; \
-  fi \
+  && curl -L -fsS https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz | tar xz -C mongo-c-driver --strip-components=1 \
   && cd mongo-c-driver \
   && mkdir build_cmake \
   && cd build_cmake \
-  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
+  && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/mongo-c-driver/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && cd ../.. \
   && rm -rf mongo-c-driver /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
   && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
@@ -118,33 +77,15 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
 RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && mkdir mongocxx \
-  && curl -L -fsS https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
-    | tar xz -C mongocxx --strip-components=1 \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/mongo-cxx-driver/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -M 100M; \
-  fi \
+  && curl -L -fsS https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz | tar xz -C mongocxx --strip-components=1 \
   && cd mongocxx \
   && mkdir build_cmake \
   && cd build_cmake \
-  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
+  && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/mongo-cxx-driver/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && cd ../.. \
   && rm -rf mongocxx \
   && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
@@ -156,37 +97,18 @@ COPY tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 COPY tiledb-cmake-ccache.patch /buildscripts/tiledb-cmake-ccache.patch
 RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/tiledb/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    export CCACHE_PARAM="-DTILEDB_CCACHE=ON"; \
-    ccache -M 100M; \
-  fi \
   && mkdir tiledb \
-  && curl -L -fsS https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
-    | tar xz -C tiledb --strip-components=1 \
+  && curl -L -fsS https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz | tar xz -C tiledb --strip-components=1 \
   && cd tiledb \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
   && patch -p0 < /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch \
   && patch -p1 < /buildscripts/tiledb-cmake-ccache.patch \
   && mkdir build_cmake \
   && cd build_cmake \
-  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
+  && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/tiledb/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && cd ../.. \
   && rm -rf tiledb \
   && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
@@ -195,29 +117,12 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
   && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/libopendrive/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -M 100M; \
-  fi \
   && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
-  && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
+  && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
   && ninja \
   && ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libopendrive/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && mkdir -p /build_thirdparty/usr/lib \
   && cp -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
   && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
@@ -225,8 +130,7 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
   && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz
 
 # Build file-geodatabase
-RUN /buildscripts/bh-set-envvars.sh \
-  && curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+RUN curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
   && tar xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
   && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
   && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
@@ -236,31 +140,14 @@ RUN /buildscripts/bh-set-envvars.sh \
 
 # Build libqb3
 RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && git clone https://github.com/lucianpls/QB3.git \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/libqb3/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -M 100M; \
-  fi \
   && cd QB3/QB3lib \
   && mkdir build \
   && cd build \
-  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+  && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
   && ninja \
   && ninja install \
   && DESTDIR="/build_thirdparty" ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libqb3/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && cd ../../.. \
   && rm -rf QB3
 
@@ -275,31 +162,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Build libjxl
 RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && git clone https://github.com/libjxl/libjxl.git --recursive \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/libjxl/x86_64/" "${HOME}/.cache/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -M 100M; \
-  fi \
   && cd libjxl \
   && mkdir build \
   && cd build \
-  && cmake -G Ninja ${CCACHE_PARAM} -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
+  && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
   && ninja \
   && ninja install \
   && DESTDIR="/build_thirdparty" ninja install \
-  && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-    echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libjxl/x86_64/"; \
-    echo "Finished"; \
-  fi \
-  && if [ -n "${WITH_CCACHE:-}" ]; then \
-    ccache -s; \
-  fi \
   && cd ../.. \
   && rm -rf libjxl /lib/x86_64-linux-gnu/libjxl*.a /build_thirdparty/lib/x86_64-linux-gnu/libjxl*.a
 
@@ -308,7 +178,6 @@ ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  /buildscripts/bh-set-envvars.sh \
   && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
@@ -326,15 +195,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Refresh grids
 COPY bh-proj.sh /buildscripts/bh-proj.sh
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh \
   && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
 
 # Build PROJ
-ARG PROJ_VERSION=master
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh && /buildscripts/bh-proj.sh
+  && /buildscripts/bh-proj.sh
 
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
@@ -342,7 +209,7 @@ ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN --mount=type=cache,id=ubuntu-full-gdal,target=${HOME}/.cache \
-  /buildscripts/bh-set-envvars.sh && /buildscripts/bh-gdal.sh
+  && /buildscripts/bh-gdal.sh
 
 
 # Build final image
