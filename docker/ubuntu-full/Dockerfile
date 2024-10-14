@@ -217,7 +217,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
 ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
   /buildscripts/bh-set-envvars.sh \
-  curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+  && curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
   && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
@@ -228,8 +228,7 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
     ccache -M 100M; \
   fi \
   && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
-  && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=/usr/ \
+  && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
   && ninja \
   && ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
@@ -248,7 +247,7 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
 
 # Build file-geodatabase
 RUN /buildscripts/bh-set-envvars.sh \
-  curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
   && tar xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
   && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
   && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
