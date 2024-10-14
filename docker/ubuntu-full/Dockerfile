@@ -18,6 +18,7 @@ RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
   && echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 
 ARG TARGET_ARCH=
+ARG GCC_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   /buildscripts/bh-set-envvars.sh \
@@ -385,6 +386,7 @@ ARG https_proxy=http://10.55.123.98:3333
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 ARG TARGET_ARCH=
+ARG GCC_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update -y && apt-get upgrade -y \
