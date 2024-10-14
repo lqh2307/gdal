@@ -2,7 +2,7 @@
 
 set -eu
 
-mkdir gdal
+mkdir -p gdal
 
 curl -L -fsS "https://github.com/${GDAL_REPOSITORY}/archive/${GDAL_VERSION}.tar.gz" | tar xz -C gdal --strip-components=1
 
@@ -11,7 +11,7 @@ cd gdal
 export CFLAGS="-DPROJ_RENAME_SYMBOLS -O2 -g"
 export CXXFLAGS="-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2 -g -Wno-psabi"
 
-mkdir build && cd build
+mkdir -p build && cd build
 
 export GDAL_CMAKE_EXTRA_OPTS="-DBUILD_JAVA_BINDINGS=ON -DJAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-amd64"
 

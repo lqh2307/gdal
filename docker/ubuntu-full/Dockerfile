@@ -60,10 +60,10 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
 RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
-  mkdir mongo-c-driver \
+  mkdir -p mongo-c-driver \
   && curl -L -fsS https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz | tar xz -C mongo-c-driver --strip-components=1 \
   && cd mongo-c-driver \
-  && mkdir build_cmake \
+  && mkdir -p build_cmake \
   && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
   && ninja \
@@ -77,10 +77,10 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
 RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
-  mkdir mongocxx \
+  mkdir -p mongocxx \
   && curl -L -fsS https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz | tar xz -C mongocxx --strip-components=1 \
   && cd mongocxx \
-  && mkdir build_cmake \
+  && mkdir -p build_cmake \
   && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
   && ninja \
@@ -97,13 +97,13 @@ COPY tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 COPY tiledb-cmake-ccache.patch /buildscripts/tiledb-cmake-ccache.patch
 RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
-  mkdir tiledb \
+  mkdir -p tiledb \
   && curl -L -fsS https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz | tar xz -C tiledb --strip-components=1 \
   && cd tiledb \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
   && patch -p0 < /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch \
   && patch -p1 < /buildscripts/tiledb-cmake-ccache.patch \
-  && mkdir build_cmake \
+  && mkdir -p build_cmake \
   && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
   && ninja \
@@ -142,7 +142,7 @@ RUN curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGD
 RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
   git clone https://github.com/lucianpls/QB3.git \
   && cd QB3/QB3lib \
-  && mkdir build \
+  && mkdir -p build \
   && cd build \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
   && ninja \
@@ -164,7 +164,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
   git clone https://github.com/libjxl/libjxl.git --recursive \
   && cd libjxl \
-  && mkdir build \
+  && mkdir -p build \
   && cd build \
   && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
   && ninja \
