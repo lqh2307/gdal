@@ -19,7 +19,7 @@ RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
 ARG JAVA_VERSION=17
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  && apt-get update -y && apt-get upgrade -y \
+  apt-get update -y && apt-get upgrade -y \
   && apt-get install -y --fix-missing --no-install-recommends \
     build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf lsb-release \
     zlib1g-dev libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev \
@@ -43,7 +43,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Build libkea
 ARG KEA_VERSION=1.5.2
 RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
-  && curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
+  curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
   && cd kealib-kealib-${KEA_VERSION} \
   && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
@@ -60,7 +60,7 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
 RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
-  && mkdir mongo-c-driver \
+  mkdir mongo-c-driver \
   && curl -L -fsS https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz | tar xz -C mongo-c-driver --strip-components=1 \
   && cd mongo-c-driver \
   && mkdir build_cmake \
@@ -77,7 +77,7 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
 RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
-  && mkdir mongocxx \
+  mkdir mongocxx \
   && curl -L -fsS https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz | tar xz -C mongocxx --strip-components=1 \
   && cd mongocxx \
   && mkdir build_cmake \
@@ -97,7 +97,7 @@ COPY tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 COPY tiledb-cmake-ccache.patch /buildscripts/tiledb-cmake-ccache.patch
 RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
-  && mkdir tiledb \
+  mkdir tiledb \
   && curl -L -fsS https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz | tar xz -C tiledb --strip-components=1 \
   && cd tiledb \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
@@ -117,7 +117,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
-  && curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+  curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
   && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
   && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
   && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
@@ -140,7 +140,7 @@ RUN curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGD
 
 # Build libqb3
 RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
-  && git clone https://github.com/lucianpls/QB3.git \
+  git clone https://github.com/lucianpls/QB3.git \
   && cd QB3/QB3lib \
   && mkdir build \
   && cd build \
@@ -162,7 +162,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Build libjxl
 RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
-  && git clone https://github.com/libjxl/libjxl.git --recursive \
+  git clone https://github.com/libjxl/libjxl.git --recursive \
   && cd libjxl \
   && mkdir build \
   && cd build \
@@ -178,7 +178,7 @@ ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+  curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
@@ -195,13 +195,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Refresh grids
 COPY bh-proj.sh /buildscripts/bh-proj.sh
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
-  && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
+  DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
   && rm -rf /build_tmp_proj
 
 # Build PROJ
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
-  && /buildscripts/bh-proj.sh
+  /buildscripts/bh-proj.sh
 
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
@@ -209,7 +209,7 @@ ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN --mount=type=cache,id=ubuntu-full-gdal,target=${HOME}/.cache \
-  && /buildscripts/bh-gdal.sh
+  /buildscripts/bh-gdal.sh
 
 
 # Build final image
