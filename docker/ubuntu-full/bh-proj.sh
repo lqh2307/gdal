@@ -75,30 +75,10 @@ ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libi
 
 rm "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib"/libproj.*
 
-if [ "${WITH_DEBUG_SYMBOLS}" = "yes" ]; then
-    # separate debug symbols
-    mkdir -p "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/.debug/" "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin/.debug/"
-
-    DEBUG_SO="${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/.debug/libinternalproj.so.${PROJ_SO}.debug"
-    x86_64-linux-gnu-objcopy -v --only-keep-debug --compress-debug-sections "${PROJ_SO_DEST}" "${DEBUG_SO}"
-    x86_64-linux-gnu-strip --strip-debug --strip-unneeded "${PROJ_SO_DEST}"
-    x86_64-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_SO}" "${PROJ_SO_DEST}"
-
-    for P in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
-        if file -h "$P" | grep -qi elf; then
-            F=$(basename "$P")
-            DEBUG_P="${DESTDIR}${PROJ_INSTALL_PREFIX}/bin/.debug/${F}.debug"
-            x86_64-linux-gnu-objcopy -v --only-keep-debug --strip-unneeded "$P" "${DEBUG_P}"
-            x86_64-linux-gnu-strip --strip-debug --strip-unneeded "$P"
-            x86_64-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_P}" "$P"
-        fi
-    done
-else
-    x86_64-linux-gnu-strip -s "${PROJ_SO_DEST}"
-    for P in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
-        x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
-    done;
-fi
+x86_64-linux-gnu-strip -s "${PROJ_SO_DEST}"
+for P in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
+    x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
+done;
 
 patchelf --set-soname libinternalproj.so.${PROJ_SO_FIRST} ${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libinternalproj.so.${PROJ_SO}
 for i in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do

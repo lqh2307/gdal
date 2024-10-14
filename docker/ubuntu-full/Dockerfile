@@ -323,8 +323,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libarrow-dataset-dev=${ARROW_VERSION} \
   && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
-ARG WITH_DEBUG_SYMBOLS=no
-
 # Refresh grids
 ARG PROJ_DATUMGRID_LATEST_LAST_MODIFIED
 ARG PROJ_INSTALL_PREFIX=/usr/local
