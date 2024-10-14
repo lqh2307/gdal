@@ -17,28 +17,6 @@ RUN rm -rf /etc/apt/apt.conf.d/docker-clean \
   && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
   && echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 
-ARG TARGET_ARCH=
-ARG GCC_ARCH=
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  /buildscripts/bh-set-envvars.sh \
-  && if test "${TARGET_ARCH}" != ""; then \
-    rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
-    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=amd64] http://security.ubuntu.com/ubuntu noble-security main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-updates main restricted universe" >> /etc/apt/sources.list \
-    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
-    && dpkg --add-architecture ${TARGET_ARCH} \
-    && apt-get update -y && apt-get upgrade -y \
-    && apt-get install -y \
-      g++-13-${GCC_ARCH}-linux-gnu \
-    && ln -s ${GCC_ARCH}-linux-gnu-gcc-13 /usr/bin/${GCC_ARCH}-linux-gnu-gcc \
-    && ln -s ${GCC_ARCH}-linux-gnu-g++-13 /usr/bin/${GCC_ARCH}-linux-gnu-g++; \
-  fi
-
 # Setup build env for PROJ, GDAL, tileDB, PDFium, libjxl
 ARG JAVA_VERSION=17
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -47,23 +25,23 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y --fix-missing --no-install-recommends \
     build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf rsync lsb-release \
-    zlib1g-dev${APT_ARCH_SUFFIX} libsqlite3-dev${APT_ARCH_SUFFIX} pkg-config sqlite3 libcurl4-openssl-dev${APT_ARCH_SUFFIX} \
-    libtiff-dev${APT_ARCH_SUFFIX} libopenjp2-7-dev${APT_ARCH_SUFFIX} libcairo2-dev${APT_ARCH_SUFFIX} \
-    python3-dev${APT_ARCH_SUFFIX} python3-numpy${APT_ARCH_SUFFIX} python3-setuptools${APT_ARCH_SUFFIX} \
-    libpng-dev${APT_ARCH_SUFFIX} libjpeg-dev${APT_ARCH_SUFFIX} libgif-dev${APT_ARCH_SUFFIX} liblzma-dev${APT_ARCH_SUFFIX} libgeos-dev${APT_ARCH_SUFFIX} \
-    curl libxml2-dev${APT_ARCH_SUFFIX} libexpat-dev${APT_ARCH_SUFFIX} libxerces-c-dev${APT_ARCH_SUFFIX} \
-    libnetcdf-dev${APT_ARCH_SUFFIX} libpoppler-dev${APT_ARCH_SUFFIX} libpoppler-private-dev${APT_ARCH_SUFFIX} \
-    libspatialite-dev${APT_ARCH_SUFFIX} librasterlite2-dev${APT_ARCH_SUFFIX} swig ant libhdf4-alt-dev${APT_ARCH_SUFFIX} libhdf5-serial-dev${APT_ARCH_SUFFIX} \
-    libfreexl-dev${APT_ARCH_SUFFIX} unixodbc-dev${APT_ARCH_SUFFIX} mdbtools-dev${APT_ARCH_SUFFIX} libwebp-dev${APT_ARCH_SUFFIX} \
-    liblcms2-2 libpcre3-dev${APT_ARCH_SUFFIX} libcrypto++-dev${APT_ARCH_SUFFIX} libfyba-dev${APT_ARCH_SUFFIX} \
-    libkml-dev${APT_ARCH_SUFFIX} libmysqlclient-dev${APT_ARCH_SUFFIX} libogdi-dev${APT_ARCH_SUFFIX} \
-    libcfitsio-dev${APT_ARCH_SUFFIX} openjdk-"${JAVA_VERSION}"-jdk${APT_ARCH_SUFFIX} libzstd-dev${APT_ARCH_SUFFIX} \
-    libpq-dev${APT_ARCH_SUFFIX} libssl-dev${APT_ARCH_SUFFIX} libboost-dev${APT_ARCH_SUFFIX} \
-    autoconf bash-completion libarmadillo-dev${APT_ARCH_SUFFIX} \
-    libopenexr-dev${APT_ARCH_SUFFIX} libheif-dev${APT_ARCH_SUFFIX} \
-    libdeflate-dev${APT_ARCH_SUFFIX} libblosc-dev${APT_ARCH_SUFFIX} liblz4-dev${APT_ARCH_SUFFIX} libbz2-dev${APT_ARCH_SUFFIX} \
-    libbrotli-dev${APT_ARCH_SUFFIX} libarchive-dev${APT_ARCH_SUFFIX} libaec-dev${APT_ARCH_SUFFIX} libavif-dev${APT_ARCH_SUFFIX} \
-    libspdlog-dev${APT_ARCH_SUFFIX} libmagic-dev${APT_ARCH_SUFFIX} liblcms2-dev${APT_ARCH_SUFFIX} libgflags-dev${APT_ARCH_SUFFIX}
+    zlib1g-dev libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev \
+    libtiff-dev libopenjp2-7-dev libcairo2-dev \
+    python3-dev python3-numpy python3-setuptools \
+    libpng-dev libjpeg-dev libgif-dev liblzma-dev libgeos-dev \
+    curl libxml2-dev libexpat-dev libxerces-c-dev \
+    libnetcdf-dev libpoppler-dev libpoppler-private-dev \
+    libspatialite-dev librasterlite2-dev swig ant libhdf4-alt-dev libhdf5-serial-dev \
+    libfreexl-dev unixodbc-dev mdbtools-dev libwebp-dev \
+    liblcms2-2 libpcre3-dev libcrypto++-dev libfyba-dev \
+    libkml-dev libmysqlclient-dev libogdi-dev \
+    libcfitsio-dev openjdk-"${JAVA_VERSION}"-jdk libzstd-dev \
+    libpq-dev libssl-dev libboost-dev \
+    autoconf bash-completion libarmadillo-dev \
+    libopenexr-dev libheif-dev \
+    libdeflate-dev libblosc-dev liblz4-dev libbz2-dev \
+    libbrotli-dev libarchive-dev libaec-dev libavif-dev \
+    libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev
 
 ARG RSYNC_REMOTE
 ARG WITH_CCACHE
@@ -76,7 +54,7 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
   && unzip -q kealib-${KEA_VERSION}.zip \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/kealib/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/kealib/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -85,13 +63,13 @@ RUN --mount=type=cache,id=ubuntu-full-kealib,target=${HOME}/.cache \
   && cd kealib-kealib-${KEA_VERSION} \
   && cmake . -G Ninja ${CCACHE_PARAM} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial \
-    -DHDF5_LIB_PATH=/usr/lib/${GCC_ARCH}-linux-gnu/hdf5/serial -DLIBKEA_WITH_GDAL=OFF \
+    -DHDF5_LIB_PATH=/usr/lib/x86_64-linux-gnu/hdf5/serial -DLIBKEA_WITH_GDAL=OFF \
   && ninja \
   && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/kealib/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/kealib/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -111,7 +89,7 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
     | tar xz -C mongo-c-driver --strip-components=1 \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/mongo-c-driver/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/mongo-c-driver/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -126,15 +104,15 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-c-driver,target=${HOME}/.cache \
   && ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/mongo-c-driver/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/mongo-c-driver/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
     ccache -s; \
   fi \
   && cd ../.. \
-  && rm -rf mongo-c-driver /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*.a \
-  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && rm -rf mongo-c-driver /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
+  && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongocxx
@@ -146,7 +124,7 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
     | tar xz -C mongocxx --strip-components=1 \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/mongo-cxx-driver/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/mongo-cxx-driver/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -161,7 +139,7 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
   && ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/mongo-cxx-driver/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/mongo-cxx-driver/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -169,7 +147,7 @@ RUN --mount=type=cache,id=ubuntu-full-mongo-cxx-driver,target=${HOME}/.cache \
   fi \
   && cd ../.. \
   && rm -rf mongocxx \
-  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build tiledb
@@ -181,7 +159,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
   /buildscripts/bh-set-envvars.sh \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/tiledb/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/tiledb/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -203,7 +181,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
   && ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/tiledb/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/tiledb/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -211,7 +189,7 @@ RUN --mount=type=cache,id=ubuntu-full-tiledb,target=${HOME}/.cache \
   fi \
   && cd ../.. \
   && rm -rf tiledb \
-  && for i in /build_thirdparty/usr/lib/${GCC_ARCH}-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
+  && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build libOpenDRIVE
@@ -222,7 +200,7 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
   && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/libopendrive/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -234,7 +212,7 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=${HOME}/.cache \
   && ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libopendrive/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -262,7 +240,7 @@ RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
   && git clone https://github.com/lucianpls/QB3.git \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/libqb3/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/libqb3/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -271,13 +249,13 @@ RUN --mount=type=cache,id=ubuntu-full-libqb3,target=${HOME}/.cache \
   && cd QB3/QB3lib \
   && mkdir build \
   && cd build \
-  && cmake .. -G Ninja ${CCACHE_PARAM} ${CMAKE_EXTRA_ARGS} -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+  && cmake .. -G Ninja ${CCACHE_PARAM} -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
   && ninja \
   && ninja install \
   && DESTDIR="/build_thirdparty" ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libqb3/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libqb3/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -301,7 +279,7 @@ RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
   && git clone https://github.com/libjxl/libjxl.git --recursive \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Downloading cache..."; \
-    rsync -ra "${RSYNC_REMOTE}/libjxl/${GCC_ARCH}/" "${HOME}/.cache/"; \
+    rsync -ra "${RSYNC_REMOTE}/libjxl/x86_64/" "${HOME}/.cache/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
@@ -316,14 +294,14 @@ RUN --mount=type=cache,id=ubuntu-full-libjxl,target=${HOME}/.cache \
   && DESTDIR="/build_thirdparty" ninja install \
   && if [ -n "${RSYNC_REMOTE:-}" ]; then \
     echo "Uploading cache..."; \
-    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libjxl/${GCC_ARCH}/"; \
+    rsync -ra --delete "${HOME}/.cache/" "${RSYNC_REMOTE}/libjxl/x86_64/"; \
     echo "Finished"; \
   fi \
   && if [ -n "${WITH_CCACHE:-}" ]; then \
     ccache -s; \
   fi \
   && cd ../.. \
-  && rm -rf libjxl /lib/${GCC_ARCH}-linux-gnu/libjxl*.a /build_thirdparty/lib/${GCC_ARCH}-linux-gnu/libjxl*.a
+  && rm -rf libjxl /lib/x86_64-linux-gnu/libjxl*.a /build_thirdparty/lib/x86_64-linux-gnu/libjxl*.a
 
 # Install Arrow C++
 ARG ARROW_VERSION=16.1.0-1
@@ -336,13 +314,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
-    libarrow${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-    libparquet${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-    libarrow-dataset${ARROW_SOVERSION}${APT_ARCH_SUFFIX} \
-    libarrow-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-    libparquet-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-    libarrow-acero-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
-    libarrow-dataset-dev${APT_ARCH_SUFFIX}=${ARROW_VERSION} \
+    libarrow${ARROW_SOVERSION} \
+    libparquet${ARROW_SOVERSION} \
+    libarrow-dataset${ARROW_SOVERSION} \
+    libarrow-dev=${ARROW_VERSION} \
+    libparquet-dev=${ARROW_VERSION} \
+    libarrow-acero-dev=${ARROW_VERSION} \
+    libarrow-dataset-dev=${ARROW_VERSION} \
   && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 ARG WITH_DEBUG_SYMBOLS=no
@@ -385,8 +363,6 @@ ARG https_proxy=http://10.55.123.98:3333
 # Update distro
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
-ARG TARGET_ARCH=
-ARG GCC_ARCH=
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update -y && apt-get upgrade -y \

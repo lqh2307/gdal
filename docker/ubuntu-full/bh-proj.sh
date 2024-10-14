@@ -22,12 +22,12 @@ curl -L -fsS "https://github.com/OSGeo/PROJ/archive/${PROJ_VERSION}.tar.gz" \
 
     if [ -n "${RSYNC_REMOTE:-}" ]; then
         echo "Downloading cache..."
-        rsync -ra "${RSYNC_REMOTE}/proj/${GCC_ARCH}/" "$HOME/.cache/"
+        rsync -ra "${RSYNC_REMOTE}/proj/x86_64/" "$HOME/.cache/"
         echo "Finished"
     fi
     if [ -n "${WITH_CCACHE:-}" ]; then
-        export CC="ccache ${GCC_ARCH}-linux-gnu-gcc"
-        export CXX="ccache ${GCC_ARCH}-linux-gnu-g++"
+        export CC="ccache x86_64-linux-gnu-gcc"
+        export CXX="ccache x86_64-linux-gnu-g++"
         export PROJ_DB_CACHE_PARAM="-DPROJ_DB_CACHE_DIR=$HOME/.cache"
 
         ccache -M 100M
@@ -48,7 +48,7 @@ curl -L -fsS "https://github.com/OSGeo/PROJ/archive/${PROJ_VERSION}.tar.gz" \
 
     if [ -n "${RSYNC_REMOTE:-}" ]; then
         echo "Uploading cache..."
-        rsync -ra --delete "$HOME/.cache/" "${RSYNC_REMOTE}/proj/${GCC_ARCH}/"
+        rsync -ra --delete "$HOME/.cache/" "${RSYNC_REMOTE}/proj/x86_64/"
         echo "Finished"
     fi
     if [ -n "${WITH_CCACHE:-}" ]; then
@@ -80,23 +80,23 @@ if [ "${WITH_DEBUG_SYMBOLS}" = "yes" ]; then
     mkdir -p "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/.debug/" "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin/.debug/"
 
     DEBUG_SO="${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/.debug/libinternalproj.so.${PROJ_SO}.debug"
-    ${GCC_ARCH}-linux-gnu-objcopy -v --only-keep-debug --compress-debug-sections "${PROJ_SO_DEST}" "${DEBUG_SO}"
-    ${GCC_ARCH}-linux-gnu-strip --strip-debug --strip-unneeded "${PROJ_SO_DEST}"
-    ${GCC_ARCH}-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_SO}" "${PROJ_SO_DEST}"
+    x86_64-linux-gnu-objcopy -v --only-keep-debug --compress-debug-sections "${PROJ_SO_DEST}" "${DEBUG_SO}"
+    x86_64-linux-gnu-strip --strip-debug --strip-unneeded "${PROJ_SO_DEST}"
+    x86_64-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_SO}" "${PROJ_SO_DEST}"
 
     for P in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
         if file -h "$P" | grep -qi elf; then
             F=$(basename "$P")
             DEBUG_P="${DESTDIR}${PROJ_INSTALL_PREFIX}/bin/.debug/${F}.debug"
-            ${GCC_ARCH}-linux-gnu-objcopy -v --only-keep-debug --strip-unneeded "$P" "${DEBUG_P}"
-            ${GCC_ARCH}-linux-gnu-strip --strip-debug --strip-unneeded "$P"
-            ${GCC_ARCH}-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_P}" "$P"
+            x86_64-linux-gnu-objcopy -v --only-keep-debug --strip-unneeded "$P" "${DEBUG_P}"
+            x86_64-linux-gnu-strip --strip-debug --strip-unneeded "$P"
+            x86_64-linux-gnu-objcopy --add-gnu-debuglink="${DEBUG_P}" "$P"
         fi
     done
 else
-    ${GCC_ARCH}-linux-gnu-strip -s "${PROJ_SO_DEST}"
+    x86_64-linux-gnu-strip -s "${PROJ_SO_DEST}"
     for P in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
-        ${GCC_ARCH}-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
+        x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
     done;
 fi
 
