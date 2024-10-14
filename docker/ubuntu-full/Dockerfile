@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y --fix-missing --no-install-recommends \
-    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf rsync lsb-release \
+    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf lsb-release \
     zlib1g-dev libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev \
     libtiff-dev libopenjp2-7-dev libcairo2-dev \
     python3-dev python3-numpy python3-setuptools \
