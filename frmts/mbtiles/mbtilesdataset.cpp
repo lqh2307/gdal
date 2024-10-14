@@ -145,6 +145,8 @@ class MBTilesDataset final : public GDALPamDataset,
     bool m_bWriteBounds;
     CPLString m_osBounds;
     CPLString m_osCenter;
+    bool m_bMetadataUniqueIndex = false;
+    bool m_bTilesUniqueIndex = false;
     bool m_bWriteMinMaxZoom;
     MBTilesDataset *poMainDS;
     bool m_bGeoTransformValid;
@@ -867,8 +869,6 @@ MBTilesDataset::MBTilesDataset()
 {
     m_bWriteBounds = true;
     m_bWriteMinMaxZoom = true;
-    m_bMetadataUniqueIndex = false;
-    m_bTilesUniqueIndex = false;
     poMainDS = nullptr;
     m_nOverviewCount = 0;
     hDS = nullptr;
