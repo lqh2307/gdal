@@ -45,7 +45,7 @@ curl -L -fsS "https://github.com/${GDAL_REPOSITORY}/archive/${GDAL_VERSION}.tar.
     mkdir build
     cd build
 
-    export GDAL_CMAKE_EXTRA_OPTS="${GDAL_CMAKE_EXTRA_OPTS} -DBUILD_JAVA_BINDINGS=ON -DJAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-amd64"
+    export GDAL_CMAKE_EXTRA_OPTS="-DBUILD_JAVA_BINDINGS=ON -DJAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-amd64"
 
     if echo "$WITH_FILEGDB" | grep -Eiq "^(y(es)?|1|true)$" ; then
       ln -s /usr/local/FileGDB_API/lib/libFileGDBAPI.so /usr/lib/x86_64-linux-gnu
