@@ -16,8 +16,7 @@ if test "${TARGET_ARCH:-}" != ""; then
 else
   export APT_ARCH_SUFFIX=""
   export WITH_HOST=""
-  GCC_ARCH="$(uname -m)"
-  export GCC_ARCH
+  export GCC_ARCH="$(uname -m)"
   export CMAKE_EXTRA_ARGS=""
 fi
 
