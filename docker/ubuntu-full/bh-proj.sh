@@ -1,12 +1,10 @@
 #!/bin/sh
 
-set -e
+set -eu
 
 if test "${DESTDIR}" = ""; then
     DESTDIR=/build
 fi
-
-set -eu
 
 mkdir -p proj
 
@@ -22,9 +20,8 @@ cmake . \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DBUILD_TESTING=OFF
-
 ninja
-DESTDIR="${DESTDIR}" ninja install
+DESTDIR=${DESTDIR} ninja install
 
 rm -rf proj
 
@@ -32,23 +29,23 @@ if test "${DESTDIR}" = "/build_tmp_proj"; then
     exit 0
 fi
 
-PROJ_SO=$(readlink -f "${DESTDIR}/usr/local/lib/libproj.so" | awk 'BEGIN {FS="libproj.so."} {print $2}')
-PROJ_SO_FIRST=$(echo "$PROJ_SO" | awk 'BEGIN {FS="."} {print $1}')
-PROJ_SO_DEST="${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO}"
+PROJ_SO=$(readlink -f ${DESTDIR}/usr/local/lib/libproj.so | awk 'BEGIN {FS="libproj.so."} {print ${2}}')
+PROJ_SO_FIRST=$(echo ${PROJ_SO} | awk 'BEGIN {FS="."} {print ${1}}')
+PROJ_SO_DEST=${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO}
 
-mv "${DESTDIR}/usr/local/lib/libproj.so.${PROJ_SO}" "${PROJ_SO_DEST}"
+mv ${DESTDIR}/usr/local/lib/libproj.so.${PROJ_SO} ${PROJ_SO_DEST}
 
-ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO_FIRST}"
-ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}/usr/local/lib/libinternalproj.so"
+ln -s libinternalproj.so.${PROJ_SO} ${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO_FIRST}
+ln -s libinternalproj.so.${PROJ_SO} ${DESTDIR}/usr/local/lib/libinternalproj.so
 
-rm "${DESTDIR}/usr/local/lib"/libproj.*
+rm -rf ${DESTDIR}/usr/local/lib/libproj.*
 
-x86_64-linux-gnu-strip -s "${PROJ_SO_DEST}"
-for P in "${DESTDIR}/usr/local/bin"/*; do
-    x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
+x86_64-linux-gnu-strip -s ${PROJ_SO_DEST}
+for P in ${DESTDIR}/usr/local/bin/*; do
+    x86_64-linux-gnu-strip -s ${P} 2>/dev/null || /bin/true;
 done;
 
 patchelf --set-soname libinternalproj.so.${PROJ_SO_FIRST} ${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO}
-for i in "${DESTDIR}/usr/local/bin"/*; do
-  patchelf --replace-needed libproj.so.${PROJ_SO_FIRST} libinternalproj.so.${PROJ_SO_FIRST} $i;
+for i in ${DESTDIR}/usr/local/bin/*; do
+  patchelf --replace-needed libproj.so.${PROJ_SO_FIRST} libinternalproj.so.${PROJ_SO_FIRST} ${i};
 done
