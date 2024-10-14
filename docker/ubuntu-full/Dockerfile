@@ -324,8 +324,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Refresh grids
-ARG PROJ_DATUMGRID_LATEST_LAST_MODIFIED
-ARG PROJ_INSTALL_PREFIX=/usr/local
 COPY bh-proj.sh /buildscripts/bh-proj.sh
 RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
   /buildscripts/bh-set-envvars.sh \
@@ -340,8 +338,6 @@ RUN --mount=type=cache,id=ubuntu-full-proj,target=${HOME}/.cache \
 
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
-ARG GDAL_RELEASE_DATE
-ARG GDAL_BUILD_IS_RELEASE
 ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY bh-gdal.sh /buildscripts/bh-gdal.sh
@@ -393,14 +389,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
-ARG PROJ_INSTALL_PREFIX=/usr/local
-
 COPY --from=builder  /build_thirdparty/usr/ /usr/
-COPY --from=builder  /tmp/proj_grids/* ${PROJ_INSTALL_PREFIX}/share/proj/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/share/proj/ ${PROJ_INSTALL_PREFIX}/share/proj/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/include/ ${PROJ_INSTALL_PREFIX}/include/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/bin/ ${PROJ_INSTALL_PREFIX}/bin/
-COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/lib/ ${PROJ_INSTALL_PREFIX}/lib/
+COPY --from=builder  /tmp/proj_grids/* /usr/local/share/proj/
+COPY --from=builder  /build/usr/local/share/proj/ /usr/local/share/proj/
+COPY --from=builder  /build/usr/local/include/ /usr/local/include/
+COPY --from=builder  /build/usr/local/bin/ /usr/local/bin/
+COPY --from=builder  /build/usr/local/lib/ /usr/local/lib/
 COPY --from=builder  /build/usr/share/java /usr/share/java
 COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
 COPY --from=builder  /build/usr/include/ /usr/include/

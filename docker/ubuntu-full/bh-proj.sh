@@ -39,7 +39,7 @@ curl -L -fsS "https://github.com/OSGeo/PROJ/archive/${PROJ_VERSION}.tar.gz" \
     cmake . \
         -G Ninja \
         -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_INSTALL_PREFIX=${PROJ_INSTALL_PREFIX:-/usr/local} \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DBUILD_TESTING=OFF \
         $PROJ_DB_CACHE_PARAM
 
@@ -64,23 +64,23 @@ if test "${DESTDIR}" = "/build_tmp_proj"; then
     exit 0
 fi
 
-PROJ_SO=$(readlink -f "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libproj.so" | awk 'BEGIN {FS="libproj.so."} {print $2}')
+PROJ_SO=$(readlink -f "${DESTDIR}/usr/local/lib/libproj.so" | awk 'BEGIN {FS="libproj.so."} {print $2}')
 PROJ_SO_FIRST=$(echo "$PROJ_SO" | awk 'BEGIN {FS="."} {print $1}')
-PROJ_SO_DEST="${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libinternalproj.so.${PROJ_SO}"
+PROJ_SO_DEST="${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO}"
 
-mv "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libproj.so.${PROJ_SO}" "${PROJ_SO_DEST}"
+mv "${DESTDIR}/usr/local/lib/libproj.so.${PROJ_SO}" "${PROJ_SO_DEST}"
 
-ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libinternalproj.so.${PROJ_SO_FIRST}"
-ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libinternalproj.so"
+ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO_FIRST}"
+ln -s "libinternalproj.so.${PROJ_SO}" "${DESTDIR}/usr/local/lib/libinternalproj.so"
 
-rm "${DESTDIR}${PROJ_INSTALL_PREFIX}/lib"/libproj.*
+rm "${DESTDIR}/usr/local/lib"/libproj.*
 
 x86_64-linux-gnu-strip -s "${PROJ_SO_DEST}"
-for P in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
+for P in "${DESTDIR}/usr/local/bin"/*; do
     x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true;
 done;
 
-patchelf --set-soname libinternalproj.so.${PROJ_SO_FIRST} ${DESTDIR}${PROJ_INSTALL_PREFIX}/lib/libinternalproj.so.${PROJ_SO}
-for i in "${DESTDIR}${PROJ_INSTALL_PREFIX}/bin"/*; do
+patchelf --set-soname libinternalproj.so.${PROJ_SO_FIRST} ${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO}
+for i in "${DESTDIR}/usr/local/bin"/*; do
   patchelf --replace-needed libproj.so.${PROJ_SO_FIRST} libinternalproj.so.${PROJ_SO_FIRST} $i;
 done
