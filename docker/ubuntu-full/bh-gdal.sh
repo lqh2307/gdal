@@ -26,8 +26,8 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DGDAL_FIND_PACKAGE_PROJ_MODE=MODULE \
     -DBUILD_TESTING=OFF \
-    -DPROJ_INCLUDE_DIR="/build${PROJ_INSTALL_PREFIX-/usr/local}/include" \
-    -DPROJ_LIBRARY="/build${PROJ_INSTALL_PREFIX-/usr/local}/lib/libinternalproj.so" \
+    -DPROJ_INCLUDE_DIR=/build${PROJ_INSTALL_PREFIX-/usr/local}/include \
+    -DPROJ_LIBRARY=/build${PROJ_INSTALL_PREFIX-/usr/local}/lib/libinternalproj.so \
     -DGDAL_ENABLE_PLUGINS=ON \
     -DGDAL_USE_TIFF_INTERNAL=ON \
     -DBUILD_PYTHON_BINDINGS=ON \
@@ -36,20 +36,21 @@ cmake .. \
     -DOGR_ENABLE_DRIVER_XODR_PLUGIN=TRUE \
 
 ninja
-DESTDIR="/build" ninja install
+DESTDIR=/build ninja install
 
 cd ..
 
 rm -rf gdal
 
 mkdir -p /build_gdal_python/usr/lib /build_gdal_python/usr/bin /build_gdal_version_changing/usr/include
+
 mv /build/usr/lib/python3            /build_gdal_python/usr/lib
 mv /build/usr/lib                    /build_gdal_version_changing/usr
 mv /build/usr/include/gdal_version.h /build_gdal_version_changing/usr/include
 mv /build/usr/bin/*.py               /build_gdal_python/usr/bin
 mv /build/usr/bin                    /build_gdal_version_changing/usr
 
-for P in "/build_gdal_version_changing/usr/lib/x86_64-linux-gnu"/*; do x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-for P in "/build_gdal_version_changing/usr/lib/x86_64-linux-gnu"/gdalplugins/*; do x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-for P in /build_gdal_python/usr/lib/python3/dist-packages/osgeo/*.so; do x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
-for P in /build_gdal_version_changing/usr/bin/*; do x86_64-linux-gnu-strip -s "$P" 2>/dev/null || /bin/true; done
+for P in /build_gdal_version_changing/usr/lib/x86_64-linux-gnu/*; do x86_64-linux-gnu-strip -s ${P} 2>/dev/null || /bin/true; done
+for P in /build_gdal_version_changing/usr/lib/x86_64-linux-gnu/gdalplugins/*; do x86_64-linux-gnu-strip -s ${P} 2>/dev/null || /bin/true; done
+for P in /build_gdal_python/usr/lib/python3/dist-packages/osgeo/*.so; do x86_64-linux-gnu-strip -s ${P} 2>/dev/null || /bin/true; done
+for P in /build_gdal_version_changing/usr/bin/*; do x86_64-linux-gnu-strip -s ${P} 2>/dev/null || /bin/true; done
