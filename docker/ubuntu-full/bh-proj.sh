@@ -2,10 +2,6 @@
 
 set -eu
 
-if test "${DESTDIR}" = ""; then
-    DESTDIR=/build
-fi
-
 mkdir -p proj
 
 curl -L -fsS "https://github.com/OSGeo/PROJ/archive/master.tar.gz" | tar xz -C proj --strip-components=1

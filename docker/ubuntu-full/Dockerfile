@@ -41,7 +41,7 @@ RUN curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}
     -DCMAKE_INSTALL_PREFIX=/usr -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial \
     -DHDF5_LIB_PATH=/usr/lib/x86_64-linux-gnu/hdf5/serial -DLIBKEA_WITH_GDAL=OFF \
   && ninja \
-  && DESTDIR="/build_thirdparty" ninja install \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd .. \
   && rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip \
@@ -57,7 +57,7 @@ RUN mkdir -p mongo-c-driver \
   && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
   && ninja \
-  && DESTDIR="/build_thirdparty" ninja install \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf mongo-c-driver /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
@@ -73,7 +73,7 @@ RUN mkdir -p mongocxx \
   && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
   && ninja \
-  && DESTDIR="/build_thirdparty" ninja install \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf mongocxx \
@@ -95,7 +95,7 @@ RUN mkdir -p tiledb \
   && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
   && ninja \
-  && DESTDIR="/build_thirdparty" ninja install \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf tiledb \
@@ -133,7 +133,7 @@ RUN git clone https://github.com/lucianpls/QB3.git \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
   && ninja \
   && ninja install \
-  && DESTDIR="/build_thirdparty" ninja install \
+  && DESTDIR=/build_thirdparty ninja install \
   && cd ../../.. \
   && rm -rf QB3
 
@@ -152,7 +152,7 @@ RUN git clone https://github.com/libjxl/libjxl.git --recursive \
   && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
   && ninja \
   && ninja install \
-  && DESTDIR="/build_thirdparty" ninja install \
+  && DESTDIR=/build_thirdparty ninja install \
   && cd ../.. \
   && rm -rf libjxl /lib/x86_64-linux-gnu/libjxl*.a /build_thirdparty/lib/x86_64-linux-gnu/libjxl*.a
 
@@ -180,7 +180,7 @@ RUN DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
   && rm -rf /build_tmp_proj
 
 # Build PROJ
-RUN /buildscripts/bh-proj.sh
+RUN DESTDIR=/build /buildscripts/bh-proj.sh
 
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
