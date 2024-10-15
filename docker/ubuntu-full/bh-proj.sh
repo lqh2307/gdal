@@ -25,8 +25,8 @@ if test "${DESTDIR}" = "/build_tmp_proj"; then
     exit 0
 fi
 
-PROJ_SO=$(readlink -f ${DESTDIR}/usr/local/lib/libproj.so | awk 'BEGIN {FS="libproj.so."} {print ${2}}')
-PROJ_SO_FIRST=$(echo ${PROJ_SO} | awk 'BEGIN {FS="."} {print ${1}}')
+PROJ_SO=$(readlink -f ${DESTDIR}/usr/local/lib/libproj.so | awk 'BEGIN {FS="libproj.so."} {print $2}')
+PROJ_SO_FIRST=$(echo ${PROJ_SO} | awk 'BEGIN {FS="."} {print $1}')
 PROJ_SO_DEST=${DESTDIR}/usr/local/lib/libinternalproj.so.${PROJ_SO}
 
 mv ${DESTDIR}/usr/local/lib/libproj.so.${PROJ_SO} ${PROJ_SO_DEST}
