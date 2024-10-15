@@ -24,7 +24,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     libfreexl-dev unixodbc-dev mdbtools-dev libwebp-dev \
     liblcms2-2 libpcre3-dev libcrypto++-dev libfyba-dev \
     libkml-dev libmysqlclient-dev libogdi-dev \
-    libcfitsio-dev openjdk-"${JAVA_VERSION}"-jdk libzstd-dev \
+    libcfitsio-dev openjdk-${JAVA_VERSION}-jdk libzstd-dev \
     libpq-dev libssl-dev libboost-dev \
     autoconf bash-completion libarmadillo-dev \
     libopenexr-dev libheif-dev \
@@ -216,7 +216,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
     python-is-python3 python3-pil \
   && apt-get install -y --no-install-recommends \
-    openjdk-"${JAVA_VERSION}"-jre \
+    openjdk-${JAVA_VERSION}-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/$(uname -p)-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/$(uname -p)-linux-gnu \
   # Install Arrow C++
