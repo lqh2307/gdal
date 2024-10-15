@@ -4,7 +4,7 @@ set -eu
 
 mkdir -p proj
 
-curl -L -fsS https://github.com/OSGeo/PROJ/archive/master.tar.gz | tar xz -C proj --strip-components=1
+wget -q https://github.com/OSGeo/PROJ/archive/${PROJ_VERSION}.tar.gz -O - | tar xzf -C proj --strip-components=1
 
 cd proj
 

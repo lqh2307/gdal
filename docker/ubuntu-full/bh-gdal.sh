@@ -4,7 +4,7 @@ set -eu
 
 mkdir -p gdal
 
-curl -L -fsS https://github.com/${GDAL_REPOSITORY}/archive/${GDAL_VERSION}.tar.gz | tar xz -C gdal --strip-components=1
+wget -q https://github.com/${GDAL_REPOSITORY}/archive/${GDAL_VERSION}.tar.gz -O - | tar xzf -C gdal --strip-components=1
 
 cd gdal
 

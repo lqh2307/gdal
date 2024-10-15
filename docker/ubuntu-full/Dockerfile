@@ -34,7 +34,7 @@ RUN apt-get update -y && apt-get upgrade -y \
 
 # Build libkea
 ARG KEA_VERSION=1.5.2
-RUN curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
+RUN wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip \
   && cd kealib-kealib-${KEA_VERSION} \
   && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
@@ -50,33 +50,31 @@ RUN curl -LO -fsS https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}
 
 # Build mongo-c-driver
 ARG MONGO_C_DRIVER_VERSION=1.24.4
-RUN mkdir -p mongo-c-driver \
-  && curl -L -fsS https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz | tar xz -C mongo-c-driver --strip-components=1 \
-  && cd mongo-c-driver \
-  && mkdir -p build_cmake \
-  && cd build_cmake \
+RUN wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
+  && tar xzf mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
+  && cd mongo-c-driver-${MONGO_C_DRIVER_VERSION} \
+  && mkdir -p build_cmake && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
   && ninja \
   && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
-  && rm -rf mongo-c-driver /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
+  && rm -rf mongo-c-driver-${MONGO_C_DRIVER_VERSION} mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
   && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build mongocxx
 ARG MONGOCXX_VERSION=3.8.1
-RUN mkdir -p mongocxx \
-  && curl -L -fsS https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz | tar xz -C mongocxx --strip-components=1 \
-  && cd mongocxx \
-  && mkdir -p build_cmake \
-  && cd build_cmake \
+RUN wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
+  && tar xzf r${MONGOCXX_VERSION}.tar.gz \
+  && cd mongo-cxx-driver-r${MONGOCXX_VERSION} \
+  && mkdir -p build_cmake && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
   && ninja \
   && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
-  && rm -rf mongocxx \
+  && rm -rf mongo-cxx-driver-r${MONGOCXX_VERSION} r${MONGOCXX_VERSION}.tar.gz \
   && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
@@ -85,26 +83,25 @@ ARG TILEDB_VERSION=2.23.0
 COPY tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
 COPY tiledb-cmake-ccache.patch /buildscripts/tiledb-cmake-ccache.patch
-RUN mkdir -p tiledb \
-  && curl -L -fsS https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz | tar xz -C tiledb --strip-components=1 \
-  && cd tiledb \
+RUN wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.gz \
+  && tar xzf ${TILEDB_VERSION}.tar.gz \
+  && cd TileDB-${TILEDB_VERSION} \
   && patch -p0 < /buildscripts/tiledb-FindLZ4_EP.cmake.patch \
   && patch -p0 < /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch \
   && patch -p1 < /buildscripts/tiledb-cmake-ccache.patch \
-  && mkdir -p build_cmake \
-  && cd build_cmake \
+  && mkdir -p build_cmake && cd build_cmake \
   && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
   && ninja \
   && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
-  && rm -rf tiledb \
+  && rm -rf TileDB-${TILEDB_VERSION} ${TILEDB_VERSION}.tar.gz \
   && for i in /build_thirdparty/usr/lib/x86_64-linux-gnu/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && for i in /build_thirdparty/usr/bin/*; do strip -s ${i} 2>/dev/null || /bin/true; done
 
 # Build libOpenDRIVE
 ARG OPENDRIVE_VERSION=0.6.0-gdal
-RUN curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+RUN wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
   && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
   && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
   && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/ \
@@ -117,8 +114,8 @@ RUN curl -LO -fsS https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPE
   && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz
 
 # Build file-geodatabase
-RUN curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && tar xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
+RUN wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
   && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
   && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
   && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
@@ -128,8 +125,7 @@ RUN curl -LO -fsS https://github.com/Esri/file-geodatabase-api/raw/master/FileGD
 # Build libqb3
 RUN git clone https://github.com/lucianpls/QB3.git \
   && cd QB3/QB3lib \
-  && mkdir -p build \
-  && cd build \
+  && mkdir -p build && cd build \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
   && ninja \
   && ninja install \
@@ -138,8 +134,8 @@ RUN git clone https://github.com/lucianpls/QB3.git \
   && rm -rf QB3
 
 # Build pdfium
-RUN curl -LO -fsS https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
-  && tar xzf install-ubuntu2004-rev6677.tar.gz \
+RUN wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/pdfium_6677_v1/install-ubuntu2004-rev6677.tar.gz \
+  && tar -xzf install-ubuntu2004-rev6677.tar.gz \
   && mv install/lib/* /usr/lib/ \
   && mv install/include/* /usr/include/ \
   && rm -rf install-ubuntu2004-rev6677.tar.gz install
@@ -147,8 +143,7 @@ RUN curl -LO -fsS https://github.com/rouault/pdfium_build_gdal_3_10/releases/dow
 # Build libjxl
 RUN git clone https://github.com/libjxl/libjxl.git --recursive \
   && cd libjxl \
-  && mkdir -p build \
-  && cd build \
+  && mkdir -p build && cd build \
   && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
   && ninja \
   && ninja install \
@@ -159,7 +154,7 @@ RUN git clone https://github.com/libjxl/libjxl.git --recursive \
 # Install Arrow C++
 ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
-RUN curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+RUN wget -q https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
@@ -220,7 +215,7 @@ RUN apt-get update -y && apt-get upgrade -y \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/$(uname -p)-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/$(uname -p)-linux-gnu \
   # Install Arrow C++
-  && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
+  && wget -q https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
     ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
