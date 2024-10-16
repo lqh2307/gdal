@@ -2,11 +2,9 @@
 
 set -eu
 
-mkdir -p proj
+git clone --recurse-submodules --single-branch -b master https://github.com/OSGeo/PROJ.git
 
-wget -q https://github.com/OSGeo/PROJ/archive/master.tar.gz -O - | tar xzf -C proj --strip-components=1
-
-cd proj
+cd PROJ
 
 export CFLAGS="-DPROJ_RENAME_SYMBOLS -O2 -g"
 export CXXFLAGS="-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2 -g"
@@ -19,7 +17,7 @@ cmake . \
 ninja
 DESTDIR=${DESTDIR} ninja install
 
-rm -rf proj
+rm -rf PROJ
 
 if test "${DESTDIR}" = "/build_tmp_proj"; then
     exit 0
