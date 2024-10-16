@@ -2,9 +2,7 @@
 
 set -eu
 
-mkdir -p gdal
-
-wget -q https://github.com/${GDAL_REPOSITORY}/archive/${GDAL_VERSION}.tar.gz -O - | tar xzf -C gdal --strip-components=1
+git clone --recurse-submodules --single-branch -b ${GDAL_VERSION} https://github.com/${GDAL_REPOSITORY}.git
 
 cd gdal
 
