@@ -123,7 +123,7 @@ RUN wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_
   && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz
 
 # Build libqb3
-RUN git clone https://github.com/lucianpls/QB3.git \
+RUN git clone --recurse-submodules --single-branch -b master https://github.com/lucianpls/QB3.git \
   && cd QB3/QB3lib \
   && mkdir -p build && cd build \
   && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
@@ -141,7 +141,7 @@ RUN wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/
   && rm -rf install-ubuntu2004-rev6677.tar.gz install
 
 # Build libjxl
-RUN git clone https://github.com/libjxl/libjxl.git --recursive \
+RUN git clone --recurse-submodules --single-branch -b main https://github.com/libjxl/libjxl.git \
   && cd libjxl \
   && mkdir -p build && cd build \
   && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \

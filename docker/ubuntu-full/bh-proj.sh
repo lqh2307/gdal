@@ -17,6 +17,7 @@ cmake . \
 ninja
 DESTDIR=${DESTDIR} ninja install
 
+cd ..
 rm -rf PROJ
 
 if test "${DESTDIR}" = "/build_tmp_proj"; then

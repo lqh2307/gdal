@@ -36,7 +36,6 @@ ninja
 DESTDIR=/build ninja install
 
 cd ..
-
 rm -rf gdal
 
 mkdir -p /build_gdal_python/usr/lib /build_gdal_python/usr/bin /build_gdal_version_changing/usr/include
