@@ -181,7 +181,7 @@ RUN curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/ma
   && dpkg -i libadbc-driver-sqlite-dev_14-1_amd64.deb \
   && dpkg -i libadbc-driver-snowflake102_14-1_amd64.deb \
   && dpkg -i libadbc-driver-snowflake-dev_14-1_amd64.deb \
-  && rm -f libadbc*.deb;
+  && rm -rf libadbc*.deb;
 
 # Refresh grids
 COPY bh-proj.sh /buildscripts/bh-proj.sh
@@ -261,7 +261,7 @@ RUN curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/ma
 RUN curl -LO -fsS https://github.com/duckdb/duckdb/releases/download/v1.1.2/libduckdb-linux-amd64.zip \
   && unzip libduckdb-linux-amd64.zip libduckdb.so \
   && mv libduckdb.so /usr/lib/x86_64-linux-gnu \
-  && rm -f libduckdb-linux-amd64.zip;
+  && rm -rf libduckdb-linux-amd64.zip;
 
 COPY --from=builder  /build_thirdparty/usr/ /usr/
 COPY --from=builder  /tmp/proj_grids/* /usr/local/share/proj/
