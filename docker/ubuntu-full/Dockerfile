@@ -6,8 +6,8 @@ FROM ${BASE_IMAGE} AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 
 # set proxy
-ARG http_proxy=http://10.55.123.98:3333
-ARG https_proxy=http://10.55.123.98:3333
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 # Setup build env for PROJ, GDAL, tileDB, PDFium, libjxl
 ARG JAVA_VERSION=17
@@ -122,6 +122,49 @@ RUN wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_
   && cp /usr/local/FileGDB_API/include/* /usr/include \
   && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz
 
+# Download Oracle InstantClient (proprietary) SDK if WITH_ORACLE=yes is passed
+ARG WITH_ORACLE=
+RUN if echo "${WITH_ORACLE}" | grep -Eiq "^(y(es)?|1|true)$"; then ( \
+    wget https://download.oracle.com/otn_software/linux/instantclient/1923000/instantclient-basic-linux.x64-19.23.0.0.0dbru.zip \
+    && wget https://download.oracle.com/otn_software/linux/instantclient/1923000/instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
+    && unzip -o instantclient-basic-linux.x64-19.23.0.0.0dbru.zip \
+    && unzip -o instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
+    && rm -f instantclient-basic-linux.x64-19.23.0.0.0dbru.zip instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
+    && mv instantclient_19_23 /opt \
+    && mkdir -p /build_thirdparty/opt \
+    && cp -r /opt/instantclient_19_23 /build_thirdparty/opt \
+    && (cd /opt/instantclient_19_23; for i in *.so*; do ln -s /opt/instantclient_19_23/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/instantclient_19_23/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
+  ); fi
+
+# Download ECW (proprietary) SDK if WITH_ECW=yes is passed
+ARG WITH_ECW=
+RUN if echo "${WITH_ECW}" | grep -Eiq "^(y(es)?|1|true)$"; then ( \
+    wget https://github.com/rouault/libecwj2-3.3-builds/releases/download/v1/install-libecwj2-3.3-ubuntu-20.04.tar.gz \
+    && tar xzf install-libecwj2-3.3-ubuntu-20.04.tar.gz \
+    && rm -f install-libecwj2-3.3-ubuntu-20.04.tar.gz \
+    && mkdir -p /build_thirdparty/opt \
+    && cp -r /opt/libecwj2-3.3 /build_thirdparty/opt \
+    && (cd /opt/libecwj2-3.3/lib; for i in *.so*; do ln -s /opt/libecwj2-3.3/lib/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/libecwj2-3.3/lib/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
+  ); fi
+
+# Download MrSID (proprietary) SDK if WITH_MRSID=yes is passed
+ARG WITH_MRSID=
+RUN if echo "${WITH_MRSID}" | grep -Eiq "^(y(es)?|1|true)$"; then ( \
+    wget https://bin.extensis.com/download/developer/MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
+    && unzip MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
+    && mv MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131 mrsid \
+    && rm -f MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
+    && mkdir -p /opt/Raster_DSDK/include \
+    && mkdir -p /opt/Raster_DSDK/lib \
+    && cp -r mrsid/Raster_DSDK/include/* /opt/Raster_DSDK/include \
+    && cp -r mrsid/Raster_DSDK/lib/* /opt/Raster_DSDK/lib \
+    && rm -rf mrsid \
+    && mkdir -p /build_thirdparty/opt/Raster_DSDK/lib \
+    && cp -r /opt/Raster_DSDK/lib /build_thirdparty/opt/Raster_DSDK \
+    && (cd /opt/Raster_DSDK/lib; for i in *.so*; do ln -s /opt/Raster_DSDK/lib/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/Raster_DSDK/lib/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
+  );
+  fi
+
 # Build libqb3
 RUN git clone --recurse-submodules --single-branch -b master https://github.com/lucianpls/QB3.git \
   && cd QB3/QB3lib \
@@ -199,6 +242,7 @@ ARG GDAL_REPOSITORY=lqh2307/gdal
 COPY bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN /buildscripts/bh-gdal.sh
 
+RUN mkdir -p /build_thirdparty/opt
 
 # Build final image
 FROM ${TARGET_BASE_IMAGE} AS runner
@@ -206,8 +250,8 @@ FROM ${TARGET_BASE_IMAGE} AS runner
 ARG DEBIAN_FRONTEND=noninteractive
 
 # set proxy
-ARG http_proxy=http://10.55.123.98:3333
-ARG https_proxy=http://10.55.123.98:3333
+# ARG http_proxy=http://10.55.123.98:3333
+# ARG https_proxy=http://10.55.123.98:3333
 
 # Update distro
 ARG JAVA_VERSION=17
@@ -264,6 +308,7 @@ RUN curl -LO -fsS https://github.com/duckdb/duckdb/releases/download/v1.1.3/libd
   && rm -rf libduckdb-linux-amd64.zip;
 
 COPY --from=builder  /build_thirdparty/usr/ /usr/
+COPY --from=builder  /build_thirdparty/opt/ /opt/
 COPY --from=builder  /tmp/proj_grids/* /usr/local/share/proj/
 COPY --from=builder  /build/usr/local/share/proj/ /usr/local/share/proj/
 COPY --from=builder  /build/usr/local/include/ /usr/local/include/

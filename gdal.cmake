@@ -196,6 +196,10 @@ if (MINGW AND BUILD_SHARED_LIBS)
     set_target_properties(${GDAL_LIB_TARGET_NAME} PROPERTIES SUFFIX "-${GDAL_SOVERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif ()
 
+# Some of the types in our public headers are dependent on whether GDAL_DEBUG
+# is defined or not
+target_compile_definitions(${GDAL_LIB_TARGET_NAME} PUBLIC $<$<CONFIG:DEBUG>:GDAL_DEBUG>)
+
 # Install properties
 if (GDAL_ENABLE_MACOSX_FRAMEWORK)
   set(FRAMEWORK_VERSION ${GDAL_VERSION_MAJOR}.${GDAL_VERSION_MINOR})
@@ -454,9 +458,6 @@ target_include_directories(
 if (MSVC)
   target_sources(${GDAL_LIB_TARGET_NAME} PRIVATE gcore/Version.rc)
   source_group("Resource Files" FILES gcore/Version.rc)
-  if (CMAKE_CL_64)
-    set_target_properties(${GDAL_LIB_TARGET_NAME} PROPERTIES STATIC_LIBRARY_FLAGS "/machine:x64")
-  endif ()
 endif ()
 
 get_property(_plugins GLOBAL PROPERTY PLUGIN_MODULES)

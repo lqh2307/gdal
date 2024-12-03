@@ -1,7 +1,6 @@
 #!/usr/bin/env pytest
 # -*- coding: utf-8 -*-
 ###############################################################################
-# $Id$
 #
 # Project:  GDAL/OGR Test Suite
 # Purpose:  Test OGR DXF driver functionality.
@@ -436,20 +435,28 @@ def test_ogr_dxf_12(tmp_path):
 
     dst_feat = ogr.Feature(feature_def=lyr.GetLayerDefn())
     dst_feat.SetGeometryDirectly(ogr.CreateGeometryFromWkt("LINESTRING(10 12, 60 65)"))
+    dst_feat.SetFID(0)
     lyr.CreateFeature(dst_feat)
+    # 80 is the minimum handle value we set in case of inapproriate or unset
+    # initial FID value
+    assert dst_feat.GetFID() >= 80
     dst_feat = None
 
     dst_feat = ogr.Feature(feature_def=lyr.GetLayerDefn())
     dst_feat.SetGeometryDirectly(
         ogr.CreateGeometryFromWkt("POLYGON((0 0,100 0,100 100,0 0))")
     )
+    dst_feat.SetFID(79)
     lyr.CreateFeature(dst_feat)
+    assert dst_feat.GetFID() == 79
     dst_feat = None
 
     # Test 25D linestring with constant Z (#5210)
     dst_feat = ogr.Feature(feature_def=lyr.GetLayerDefn())
     dst_feat.SetGeometryDirectly(ogr.CreateGeometryFromWkt("LINESTRING(1 2 10,3 4 10)"))
+    dst_feat.SetFID(79)
     lyr.CreateFeature(dst_feat)
+    assert dst_feat.GetFID() > 79
     dst_feat = None
 
     # Test 25D linestring with different Z (#5210)
