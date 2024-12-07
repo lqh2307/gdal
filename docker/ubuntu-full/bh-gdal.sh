@@ -11,7 +11,7 @@ export CXXFLAGS="-DPROJ_RENAME_SYMBOLS -DPROJ_INTERNAL_CPP_NAMESPACE -O2 -g -Wno
 
 mkdir -p build && cd build
 
-export GDAL_CMAKE_EXTRA_OPTS="-DBUILD_JAVA_BINDINGS=ON -DJAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-amd64"
+export GDAL_CMAKE_EXTRA_OPTS="-DBUILD_JAVA_BINDINGS=ON -DJAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
 
 ln -s /usr/local/FileGDB_API/lib/libFileGDBAPI.so /usr/lib/x86_64-linux-gnu
 export GDAL_CMAKE_EXTRA_OPTS="${GDAL_CMAKE_EXTRA_OPTS} -DFileGDB_ROOT:PATH=/usr/local/FileGDB_API -DFileGDB_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libFileGDBAPI.so"
