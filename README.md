@@ -1,5 +1,4 @@
-GDAL - Geospatial Data Abstraction Library
-====
+# GDAL - Geospatial Data Abstraction Library
 
 [![Build Status](https://github.com/OSGeo/gdal/actions/workflows/linux_build.yml/badge.svg)](https://github.com/osgeo/gdal/actions?query=workflow%3A%22Linux+Builds%22+branch%3Amaster)
 [![Build Status](https://github.com/OSGeo/gdal/actions/workflows/macos.yml/badge.svg)](https://github.com/osgeo/gdal/actions?query=workflow%3A%22MacOS+build%22+branch%3Amaster)
@@ -17,18 +16,17 @@ GDAL - Geospatial Data Abstraction Library
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5884351.svg)](https://doi.org/10.5281/zenodo.5884351)
 
-[![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A )](http://numfocus.org)
-
+[![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-NumFOCUS-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](http://numfocus.org)
 
 GDAL is an open source MIT licensed translator library for raster and vector geospatial data formats.
 
-* Main site: https://gdal.org - Developer and user docs, links to other resources
-* GIT repository: https://github.com/OSGeo/gdal
-* Bug tracker: https://github.com/OSGeo/gdal/issues
-* Download: https://download.osgeo.org/gdal
-* Mailing list: https://lists.osgeo.org/mailman/listinfo/gdal-dev
+-   Main site: https://gdal.org - Developer and user docs, links to other resources
+-   GIT repository: https://github.com/OSGeo/gdal
+-   Bug tracker: https://github.com/OSGeo/gdal/issues
+-   Download: https://download.osgeo.org/gdal
+-   Mailing list: https://lists.osgeo.org/mailman/listinfo/gdal-dev
 
-[//]: # (numfocus-fiscal-sponsor-attribution)
+[//]: # "numfocus-fiscal-sponsor-attribution"
 
 The GDAL project uses a [custom governance](./GOVERNANCE.md)
 and is fiscally sponsored by [NumFOCUS](https://numfocus.org/). Consider making
@@ -63,12 +61,3 @@ See [docker/](docker/)
 ### Code of Conduct
 
 See [doc/source/community/code_of_conduct.rst](doc/source/community/code_of_conduct.rst)
-
-### Security policy
-
-See [SECURITY.md](SECURITY.md)
-
-### Citing GDAL/OGR in publications
-
-See [CITATION](CITATION) and [CITATION.cff](CITATION.cff)
-
