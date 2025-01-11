@@ -334,7 +334,7 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "GDAL_NETCDF_REPORT_EXTRA_DIM_VALUES", // from netcdfdataset.cpp
    "GDAL_NETCDF_VERIFY_DIMS", // from netcdfdataset.cpp
    "GDAL_NO_COSTLY_OVERVIEW", // from rasterio.cpp
-   "GDAL_NUM_THREADS", // from avifdataset.cpp, common.cpp, cpl_vsil_gzip.cpp, gdal_tps.cpp, gdalgrid.cpp, gdalpansharpen.cpp, gdaltileindexdataset.cpp, gdalwarpkernel.cpp, gtiffdataset_write.cpp, jpegxl.cpp, ogr2ogr_lib.cpp, ogrmvtdataset.cpp, ogrparquetlayer.cpp, osm_parser.cpp, overview.cpp, rmfdataset.cpp, vrtdataset.cpp, zarr_array.cpp
+   "GDAL_NUM_THREADS", // from avifdataset.cpp, common.cpp, cpl_vsil_gzip.cpp, gdal_tps.cpp, gdalgrid.cpp, gdalpansharpen.cpp, gdaltileindexdataset.cpp, gdalwarpkernel.cpp, gtiffdataset_write.cpp, jpegxl.cpp, libertiffdataset.cpp, ogr2ogr_lib.cpp, ogrmvtdataset.cpp, ogrparquetlayer.cpp, osm_parser.cpp, overview.cpp, rmfdataset.cpp, vrtdataset.cpp, zarr_array.cpp
    "GDAL_OGCAPI_TILEMATRIXSET_LIMITS", // from gdalogcapidataset.cpp
    "GDAL_ONE_BIG_READ", // from jp2kakdataset.cpp, jpipkakdataset.cpp, mrsiddataset.cpp, rawdataset.cpp, wcsdataset.cpp
    "GDAL_OPEN_AFTER_COPY", // from jpgdataset.cpp, pngdataset.cpp
@@ -348,12 +348,19 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "GDAL_PAM_ENABLED", // from gdalpamdataset.cpp
    "GDAL_PAM_MODE", // from gdalpamdataset.cpp
    "GDAL_PAM_PROXY_DIR", // from gdalpamproxydb.cpp
+   "GDAL_PDF_BANDS", // from pdfdrivercore.cpp
+   "GDAL_PDF_DPI", // from pdfdrivercore.cpp
    "GDAL_PDF_GEO_ENCODING", // from pdfcreatecopy.cpp, pdfdataset.cpp
    "GDAL_PDF_LAUNDER_LAYER_NAMES", // from pdfdataset.cpp
+   "GDAL_PDF_LAYERS", // from pdfdrivercore.cpp
+   "GDAL_PDF_LAYERS_OFF", // from pdfdrivercore.cpp
+   "GDAL_PDF_LIB", // from pdfdrivercore.cpp
    "GDAL_PDF_LIMIT_PAGE_COUNT", // from pdfdataset.cpp
+   "GDAL_PDF_NEATLINE", // from pdfdrivercore.cpp
    "GDAL_PDF_OGC_BP_READ_WKT", // from pdfdataset.cpp
    "GDAL_PDF_OGC_BP_WRITE_WKT", // from pdfcreatecopy.cpp, pdfcreatefromcomposition.cpp
    "GDAL_PDF_PRINT_COMMANDS", // from pdfdataset.cpp
+   "GDAL_PDF_RENDERING_OPTIONS", // from pdfdrivercore.cpp
    "GDAL_PDF_USE_SPAWN", // from pdfdataset.cpp
    "GDAL_PDF_WRITE_ESRI_CODE_AS_EPSG", // from pdfcreatecopy.cpp
    "GDAL_PDF_WRITE_GEOREF_ON_IMAGE", // from pdfcreatecopy.cpp
@@ -468,6 +475,7 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "GRIB_CACHEMAX", // from gribdataset.cpp
    "GRIB_DEFAULT_SEMI_MAJOR", // from gribdataset.cpp
    "GRIB_DEFAULT_SEMI_MINOR", // from gribdataset.cpp
+   "GRIB_LATITUDE_OF_FIRST_GRID_POINT_IS_SOUTHERN_MOST", // from gribdataset.cpp
    "GRIB_NORMALIZE_UNITS", // from gribdataset.cpp
    "GRIB_PDS_ALL_BANDS", // from gribdataset.cpp
    "GRIB_RESOURCE_DIR", // from metaname.cpp
@@ -656,7 +664,7 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "OGR_API_SPY_SNAPSHOT_PATH", // from ograpispy.cpp
    "OGR_APPLY_GEOM_SET_PRECISION", // from ogr2ogr_lib.cpp, ogrlayer.cpp
    "OGR_ARC_MAX_GAP", // from ogrgeometryfactory.cpp
-   "OGR_ARC_STEPSIZE", // from gml2ogrgeometry.cpp, ogrdgnv8layer.cpp, ogrgeometryfactory.cpp, ogrili1datasource.cpp, ogrili1layer.cpp, ogrpgeogeometry.cpp
+   "OGR_ARC_STEPSIZE", // from ogrgeometryfactory.cpp
    "OGR_ARROW_COMPUTE_GEOMETRY_TYPE", // from ogrfeatherlayer.cpp
    "OGR_ARROW_LOAD_FILE_SYSTEM_FACTORIES", // from ogrfeatherdriver.cpp
    "OGR_ARROW_MEM_LIMIT", // from ograrrowarrayhelper.cpp
@@ -899,6 +907,7 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "PDF_DUMP_STREAM", // from pdfdataset.cpp
    "PDF_REPORT_GCPS", // from pdfdataset.cpp
    "PDF_USE_CTM", // from pdfdataset.cpp
+   "PDF_USER_PWD", // from pdfdrivercore.cpp
    "PDS4_ENDIANNESS", // from pds4vector.cpp
    "PDS4_FORCE_MASK", // from pds4dataset.cpp
    "PDS4_SIGNEDNESS", // from pds4vector.cpp

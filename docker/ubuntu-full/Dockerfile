@@ -256,11 +256,15 @@ RUN curl -LO -fsS https://github.com/duckdb/duckdb/releases/download/v1.1.3/libd
 
 COPY --from=builder  /build_thirdparty/usr/ /usr/
 COPY --from=builder  /build_thirdparty/opt/ /opt/
-COPY --from=builder  /tmp/proj_grids/* /usr/local/share/proj/
-COPY --from=builder  /build/usr/local/share/proj/ /usr/local/share/proj/
-COPY --from=builder  /build/usr/local/include/ /usr/local/include/
-COPY --from=builder  /build/usr/local/bin/ /usr/local/bin/
-COPY --from=builder  /build/usr/local/lib/ /usr/local/lib/
+
+ARG PROJ_INSTALL_PREFIX=/usr/local
+COPY --from=builder  /tmp/proj_grids/* ${PROJ_INSTALL_PREFIX}/share/proj/
+
+COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/share/proj/ ${PROJ_INSTALL_PREFIX}/share/proj/
+COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/include/ ${PROJ_INSTALL_PREFIX}/include/
+COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/bin/ ${PROJ_INSTALL_PREFIX}/bin/
+COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/lib/ ${PROJ_INSTALL_PREFIX}/lib/
+
 COPY --from=builder  /build/usr/share/java /usr/share/java
 COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
 COPY --from=builder  /build/usr/include/ /usr/include/
@@ -270,4 +274,6 @@ COPY --from=builder  /build_gdal_version_changing/usr/ /usr/
 RUN ldconfig
 
 # Install duckdb_spatial
-RUN ogrinfo ADBC::memory: -oo ADBC_DRIVER=duckdb -oo PRELUDE_STATEMENTS="INSTALL spatial";
+RUN if test "$(uname -p)" = "x86_64"; then \
+    ogrinfo ADBC::memory: -oo ADBC_DRIVER=duckdb -oo PRELUDE_STATEMENTS="INSTALL spatial"; \
+    fi

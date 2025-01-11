@@ -11,6 +11,7 @@ add_library(
   gdalalg_main.cpp
   gdalalg_pipeline.cpp
   gdalalg_raster.cpp
+  gdalalg_raster_buildvrt.cpp
   gdalalg_raster_info.cpp
   gdalalg_raster_convert.cpp
   gdalalg_raster_edit.cpp
@@ -235,6 +236,7 @@ if (BUILD_APPS)
 endif ()
 
 set(GDAL_DATA_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/gdal_algorithm.schema.json
     ${CMAKE_CURRENT_SOURCE_DIR}/data/gdalinfo_output.schema.json
     ${CMAKE_CURRENT_SOURCE_DIR}/data/gdalmdiminfo_output.schema.json
     ${CMAKE_CURRENT_SOURCE_DIR}/data/ogrinfo_output.schema.json

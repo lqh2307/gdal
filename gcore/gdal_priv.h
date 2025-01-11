@@ -1574,6 +1574,12 @@ class CPL_DLL GDALRasterBand : public GDALMajorObject
             m_poBandRef = bOwned ? nullptr : poBand;
         }
 
+        void reset(std::unique_ptr<GDALRasterBand> poBand)
+        {
+            m_poBandOwned = std::move(poBand);
+            m_poBandRef = nullptr;
+        }
+
         const GDALRasterBand *get() const
         {
             return static_cast<const GDALRasterBand *>(*this);
@@ -1967,6 +1973,12 @@ class CPL_DLL GDALAllValidMaskBand : public GDALRasterBand
 {
   protected:
     CPLErr IReadBlock(int, int, void *) override;
+
+    CPLErr IRasterIO(GDALRWFlag eRWFlag, int nXOff, int nYOff, int nXSize,
+                     int nYSize, void *pData, int nBufXSize, int nBufYSize,
+                     GDALDataType eBufType, GSpacing nPixelSpace,
+                     GSpacing nLineSpace,
+                     GDALRasterIOExtraArg *psExtraArg) override;
 
     CPL_DISALLOW_COPY_ASSIGN(GDALAllValidMaskBand)
 
@@ -4480,6 +4492,14 @@ int CPL_DLL GDALReadTabFile2(const char *pszBaseFilename,
 
 void CPL_DLL GDALCopyRasterIOExtraArg(GDALRasterIOExtraArg *psDestArg,
                                       GDALRasterIOExtraArg *psSrcArg);
+
+void CPL_DLL GDALExpandPackedBitsToByteAt0Or1(
+    const GByte *CPL_RESTRICT pabyInput, GByte *CPL_RESTRICT pabyOutput,
+    size_t nInputBits);
+
+void CPL_DLL GDALExpandPackedBitsToByteAt0Or255(
+    const GByte *CPL_RESTRICT pabyInput, GByte *CPL_RESTRICT pabyOutput,
+    size_t nInputBits);
 
 CPL_C_END
 

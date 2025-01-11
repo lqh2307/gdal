@@ -15,6 +15,7 @@
 #define OGR_FEATURE_H_INCLUDED
 
 #include "cpl_atomic_ops.h"
+#include "gdal_fwd.h"
 #include "ogr_featurestyle.h"
 #include "ogr_geometry.h"
 #include "ogr_geomcoordinateprecision.h"
@@ -31,32 +32,6 @@
  *
  * Simple feature classes.
  */
-
-#ifndef DEFINE_OGRFeatureH
-/*! @cond Doxygen_Suppress */
-#define DEFINE_OGRFeatureH
-/*! @endcond */
-#if defined(DEBUG) || defined(GDAL_DEBUG)
-typedef struct OGRFieldDefnHS *OGRFieldDefnH;
-typedef struct OGRFeatureDefnHS *OGRFeatureDefnH;
-typedef struct OGRFeatureHS *OGRFeatureH;
-typedef struct OGRStyleTableHS *OGRStyleTableH;
-#else
-/** Opaque type for a field definition (OGRFieldDefn) */
-typedef void *OGRFieldDefnH;
-/** Opaque type for a feature definition (OGRFeatureDefn) */
-typedef void *OGRFeatureDefnH;
-/** Opaque type for a feature (OGRFeature) */
-typedef void *OGRFeatureH;
-/** Opaque type for a style table (OGRStyleTable) */
-typedef void *OGRStyleTableH;
-#endif
-/** Opaque type for a geometry field definition (OGRGeomFieldDefn) */
-typedef struct OGRGeomFieldDefnHS *OGRGeomFieldDefnH;
-
-/** Opaque type for a field domain definition (OGRFieldDomain) */
-typedef struct OGRFieldDomainHS *OGRFieldDomainH;
-#endif /* DEFINE_OGRFeatureH */
 
 class OGRStyleTable;
 
@@ -118,6 +93,12 @@ class CPL_DLL OGRFieldDefn
     OGRFieldDefn(const char *, OGRFieldType);
     explicit OGRFieldDefn(const OGRFieldDefn *);
     ~OGRFieldDefn();
+
+    // Copy constructor
+    OGRFieldDefn(const OGRFieldDefn &oOther);
+
+    // Copy assignment operator
+    OGRFieldDefn &operator=(const OGRFieldDefn &oOther);
 
     void SetName(const char *);
 
@@ -279,9 +260,6 @@ class CPL_DLL OGRFieldDefn
     /*! @endcond */
 
     TemporaryUnsealer GetTemporaryUnsealer();
-
-  private:
-    CPL_DISALLOW_COPY_ASSIGN(OGRFieldDefn)
 };
 
 #ifdef GDAL_COMPILATION
@@ -348,6 +326,12 @@ class CPL_DLL OGRGeomFieldDefn
     OGRGeomFieldDefn(const char *pszNameIn, OGRwkbGeometryType eGeomTypeIn);
     explicit OGRGeomFieldDefn(const OGRGeomFieldDefn *);
     virtual ~OGRGeomFieldDefn();
+
+    // Copy constructor
+    OGRGeomFieldDefn(const OGRGeomFieldDefn &oOther);
+
+    // Copy assignment operator
+    OGRGeomFieldDefn &operator=(const OGRGeomFieldDefn &oOther);
 
     void SetName(const char *);
 
@@ -442,9 +426,6 @@ class CPL_DLL OGRGeomFieldDefn
     /*! @endcond */
 
     TemporaryUnsealer GetTemporaryUnsealer();
-
-  private:
-    CPL_DISALLOW_COPY_ASSIGN(OGRGeomFieldDefn)
 };
 
 #ifdef GDAL_COMPILATION
@@ -643,7 +624,30 @@ class CPL_DLL OGRFeatureDefn
 
     virtual void AddFieldDefn(const OGRFieldDefn *);
     virtual OGRErr DeleteFieldDefn(int iField);
+
+    /**
+     * @brief StealFieldDefn takes ownership of the field definition at index detaching
+     *        it from the feature definition.
+     * This is an advanced method designed to be only used for driver implementations.
+     * @param iField index of the field definition to detach.
+     * @return a unique pointer to the detached field definition or nullptr if the index is out of range.
+     * @since GDAL 3.11
+     */
+    virtual std::unique_ptr<OGRFieldDefn> StealFieldDefn(int iField);
+
+    virtual void AddFieldDefn(std::unique_ptr<OGRFieldDefn> &&poFieldDefn);
+
     virtual OGRErr ReorderFieldDefns(const int *panMap);
+
+    /**
+     * @brief StealGeomFieldDefn takes ownership of the the geometry field definition at index
+     *        detaching it from the feature definition.
+     * This is an advanced method designed to be only used for driver implementations.
+     * @param iField index of the geometry field definition to detach.
+     * @return a unique pointer to the detached geometry field definition or nullptr if the index is out of range.
+     * @since GDAL 3.11
+     */
+    virtual std::unique_ptr<OGRGeomFieldDefn> StealGeomFieldDefn(int iField);
 
     virtual int GetGeomFieldCount() const;
     virtual OGRGeomFieldDefn *GetGeomFieldDefn(int i);
