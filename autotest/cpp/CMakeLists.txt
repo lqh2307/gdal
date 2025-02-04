@@ -63,6 +63,11 @@ else()
 
     add_library(gtest_for_gdal ALIAS gtest)
 
+    # Force CXX_STANDARD=14 otherwise with clang 19.1.6, one gets
+    # In file included from /home/runner/work/gdal/gdal/build-fedora_rawhide/autotest/cpp/googletest-src/googletest/include/gtest/internal/gtest-port.h:295:
+    # /usr/bin/../lib/gcc/x86_64-redhat-linux/15/../../../../include/c++/15/ciso646:46:4: error: "<ciso646> is deprecated in C++17, use <version> to detect implementation-specific macros" [-Werror,-W#warnings]
+    set_target_properties(gtest PROPERTIES CXX_STANDARD 14)
+
 endif()  # USE_EXTERNAL_GTEST
 
 
@@ -110,6 +115,7 @@ endif()
 gdal_standard_includes(gdal_unit_test)
 target_compile_options(gdal_unit_test PRIVATE ${GDAL_CXX_WARNING_FLAGS})
 target_compile_definitions(gdal_unit_test PRIVATE -DGDAL_TEST_ROOT_DIR="${GDAL_ROOT_TEST_DIR}")
+target_compile_definitions(gdal_unit_test PRIVATE ALLOW_DEPRECATED_CPL_PATH_FUNCTIONS)
 target_include_directories(
   gdal_unit_test PRIVATE $<TARGET_PROPERTY:appslib,SOURCE_DIR> $<TARGET_PROPERTY:gdal_vrt,SOURCE_DIR> $<TARGET_PROPERTY:ogrsf_generic,SOURCE_DIR>)
 if (GDAL_USE_SQLITE3)
@@ -293,6 +299,7 @@ set(QUICKTEST_LIST
     test-block-cache-4
     test-block-cache-5
     test-block-cache-6
+    test-float16
     test-copy-words
     test-closed-on-destroy-DM
     test-threaded-condition
@@ -306,6 +313,7 @@ set(QUICKTEST_LIST
     test-deferred-plugin
 )
 
+gdal_gtest_target(testfloat16 test-float16 testfloat16.cpp)
 gdal_gtest_target(testcopywords test-copy-words testcopywords.cpp)
 gdal_gtest_target(testclosedondestroydm test-closed-on-destroy-DM testclosedondestroydm.cpp)
 gdal_gtest_target(testthreadcond test-threaded-condition testthreadcond.cpp)

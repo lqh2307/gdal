@@ -631,6 +631,7 @@ CPLVirtualMem *GTiffRasterBand::GetVirtualMemAutoInternal(GDALRWFlag eRWFlag,
 }
 
 /************************************************************************/
+<<<<<<< HEAD
 /*                         CacheMultiRange()                            */
 /************************************************************************/
 
@@ -1113,6 +1114,8 @@ void *GTiffRasterBand::CacheMultiRange(int nXOff, int nYOff, int nXSize,
 }
 
 /************************************************************************/
+=======
+>>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 /*                       IGetDataCoverageStatus()                       */
 /************************************************************************/
 

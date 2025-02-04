@@ -14,10 +14,14 @@
 
 #include "gdalalg_raster_buildvrt.h"
 #include "gdalalg_raster_info.h"
+#include "gdalalg_raster_clip.h"
 #include "gdalalg_raster_convert.h"
 #include "gdalalg_raster_edit.h"
+#include "gdalalg_raster_mosaic.h"
+#include "gdalalg_raster_overview.h"
 #include "gdalalg_raster_pipeline.h"
 #include "gdalalg_raster_reproject.h"
+#include "gdalalg_raster_stack.h"
 
 /************************************************************************/
 /*                         GDALRasterAlgorithm                          */
@@ -39,10 +43,17 @@ class GDALRasterAlgorithm final : public GDALAlgorithm
     {
         RegisterSubAlgorithm<GDALRasterInfoAlgorithm>();
         RegisterSubAlgorithm<GDALRasterConvertAlgorithm>();
+        RegisterSubAlgorithm<GDALRasterClipAlgorithmStandalone>();
         RegisterSubAlgorithm<GDALRasterEditAlgorithmStandalone>();
+        RegisterSubAlgorithm<GDALRasterOverviewAlgorithm>();
         RegisterSubAlgorithm<GDALRasterPipelineAlgorithm>();
         RegisterSubAlgorithm<GDALRasterReprojectAlgorithmStandalone>();
+<<<<<<< HEAD
         RegisterSubAlgorithm<GDALRasterBuildVRTAlgorithm>();
+=======
+        RegisterSubAlgorithm<GDALRasterMosaicAlgorithm>();
+        RegisterSubAlgorithm<GDALRasterStackAlgorithm>();
+>>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     }
 
   private:

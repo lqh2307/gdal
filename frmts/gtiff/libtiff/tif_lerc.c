@@ -1316,6 +1316,7 @@ static void LERCCleanup(TIFF *tif)
 
 static const TIFFField LERCFields[] = {
     {TIFFTAG_LERC_PARAMETERS, TIFF_VARIABLE2, TIFF_VARIABLE2, TIFF_LONG, 0,
+<<<<<<< HEAD
      TIFF_SETGET_C32_UINT32, TIFF_SETGET_UNDEFINED, FIELD_CUSTOM, FALSE, TRUE,
      (char *)"LercParameters", NULL},
     {TIFFTAG_LERC_MAXZERROR, 0, 0, TIFF_ANY, 0, TIFF_SETGET_DOUBLE,
@@ -1332,6 +1333,20 @@ static const TIFFField LERCFields[] = {
      (char *)"ZSTD zstd_compress_level", NULL},
     {TIFFTAG_ZIPQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT,
      TIFF_SETGET_UNDEFINED, FIELD_PSEUDO, TRUE, FALSE, (char *)"", NULL},
+=======
+     TIFF_SETGET_C32_UINT32, FIELD_CUSTOM, FALSE, TRUE,
+     (char *)"LercParameters", NULL},
+    {TIFFTAG_LERC_MAXZERROR, 0, 0, TIFF_ANY, 0, TIFF_SETGET_DOUBLE,
+     FIELD_PSEUDO, TRUE, FALSE, (char *)"LercMaximumError", NULL},
+    {TIFFTAG_LERC_VERSION, 0, 0, TIFF_ANY, 0, TIFF_SETGET_UINT32, FIELD_PSEUDO,
+     FALSE, FALSE, (char *)"LercVersion", NULL},
+    {TIFFTAG_LERC_ADD_COMPRESSION, 0, 0, TIFF_ANY, 0, TIFF_SETGET_UINT32,
+     FIELD_PSEUDO, FALSE, FALSE, (char *)"LercAdditionalCompression", NULL},
+    {TIFFTAG_ZSTD_LEVEL, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT, FIELD_PSEUDO, TRUE,
+     FALSE, (char *)"ZSTD zstd_compress_level", NULL},
+    {TIFFTAG_ZIPQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT, FIELD_PSEUDO, TRUE,
+     FALSE, (char *)"", NULL},
+>>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 };
 
 static int LERCVSetFieldBase(TIFF *tif, uint32_t tag, ...)

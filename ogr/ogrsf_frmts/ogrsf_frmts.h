@@ -285,8 +285,14 @@ class CPL_DLL OGRLayer : public GDALMajorObject
 
     //! @cond Doxygen_Suppress
     // Keep field definitions in sync with transactions
+<<<<<<< HEAD
     void PrepareStartTransaction();
     void FinishRollbackTransaction();
+=======
+    virtual void PrepareStartTransaction();
+    // Rollback TO SAVEPOINT if osSavepointName is not empty, otherwise ROLLBACK
+    virtual void FinishRollbackTransaction(const std::string &osSavepointName);
+>>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     //! @endcond
 
     virtual const char *GetFIDColumn();
@@ -414,15 +420,26 @@ class CPL_DLL OGRLayer : public GDALMajorObject
     {
 
         FieldDefnChange(std::unique_ptr<T> &&poFieldDefnIn, int iFieldIn,
+<<<<<<< HEAD
                         FieldChangeType eChangeTypeIn)
             : poFieldDefn(std::move(poFieldDefnIn)), iField(iFieldIn),
               eChangeType(eChangeTypeIn)
+=======
+                        FieldChangeType eChangeTypeIn,
+                        const std::string &osSavepointNameIn = "")
+            : poFieldDefn(std::move(poFieldDefnIn)), iField(iFieldIn),
+              eChangeType(eChangeTypeIn), osSavepointName(osSavepointNameIn)
+>>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         {
         }
 
         std::unique_ptr<T> poFieldDefn;
         int iField;
         FieldChangeType eChangeType;
+<<<<<<< HEAD
+=======
+        std::string osSavepointName;
+>>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     };
 
     std::vector<FieldDefnChange<OGRFieldDefn>> m_apoFieldDefnChanges{};

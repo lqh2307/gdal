@@ -34,6 +34,7 @@ static int getAlignment(GDALDataType ntype)
             return 1;
         case GDT_Int16:
         case GDT_UInt16:
+        case GDT_Float16:
             return 2;
         case GDT_Int32:
         case GDT_UInt32:
@@ -44,6 +45,7 @@ static int getAlignment(GDALDataType ntype)
         case GDT_UInt64:
             return 8;
         case GDT_CInt16:
+        case GDT_CFloat16:
             return 2;
         case GDT_CInt32:
         case GDT_CFloat32:
@@ -184,8 +186,12 @@ static void readraster_releasebuffer(CPLErr eErr,
                   gdalconst.GDT_UInt16:   ("%su2" % byteorders[sys.byteorder]),
                   gdalconst.GDT_Int32:    ("%si4" % byteorders[sys.byteorder]),
                   gdalconst.GDT_UInt32:   ("%su4" % byteorders[sys.byteorder]),
+                  gdalconst.GDT_Int64:    ("%si8" % byteorders[sys.byteorder]),
+                  gdalconst.GDT_UInt64:   ("%su8" % byteorders[sys.byteorder]),
+                  gdalconst.GDT_Float16:  ("%sf2" % byteorders[sys.byteorder]),
                   gdalconst.GDT_Float32:  ("%sf4" % byteorders[sys.byteorder]),
                   gdalconst.GDT_Float64:  ("%sf8" % byteorders[sys.byteorder]),
+                  gdalconst.GDT_CFloat16: ("%sf2" % byteorders[sys.byteorder]),
                   gdalconst.GDT_CFloat32: ("%sf4" % byteorders[sys.byteorder]),
                   gdalconst.GDT_CFloat64: ("%sf8" % byteorders[sys.byteorder]),
                   gdalconst.GDT_Byte:     ("%st8" % byteorders[sys.byteorder]),
@@ -1845,6 +1851,10 @@ def GetMDArrayNames(self, options = []) -> "list[str]":
         buffer_stride.reverse()
       if not buffer_datatype:
         buffer_datatype = self.GetDataType()
+        if buffer_datatype.GetClass() == GEDTC_NUMERIC and buffer_datatype.GetNumericDataType() == gdalconst.GDT_Float16:
+          buffer_datatype = ExtendedDataType.Create(GDT_Float32)
+        elif buffer_datatype.GetClass() == GEDTC_NUMERIC and buffer_datatype.GetNumericDataType() == gdalconst.GDT_CFloat16:
+          buffer_datatype = ExtendedDataType.Create(GDT_CFloat32)
       return _gdal.MDArray_Read(self, array_start_idx, count, array_step, buffer_stride, buffer_datatype)
 
   def ReadAsArray(self,
@@ -1922,8 +1932,12 @@ def GetMDArrayNames(self, options = []) -> "list[str]":
              ('l', 4): GDT_Int32,
              ('q', 8): GDT_Int64,
              ('Q', 8): GDT_UInt64,
+             ('e', 2): GDT_Float16,
              ('f', 4): GDT_Float32,
-             ('d', 8): GDT_Float64
+             ('d', 8): GDT_Float64,
+             # ('E', 2): GDT_CFloat16,
+             ('F', 4): GDT_CFloat32,
+             ('D', 8): GDT_CFloat64
           }
           key = (buffer.typecode, buffer.itemsize)
           if key not in map_typecode_itemsize_to_gdal:
@@ -5011,6 +5025,75 @@ def InterpolateAtPoint(self, *args, **kwargs):
        -------
        float:
            Interpolated value, or ``None`` if it has any error.
+    """
+
+    ret = $action(self, *args, **kwargs)
+    if ret[0] != CE_None:
+        return None
+
+    from . import gdal
+    if gdal.DataTypeIsComplex(self.DataType):
+        return complex(ret[1], ret[2])
+    else:
+        return ret[1]
+%}
+
+%feature("shadow") InterpolateAtGeolocation %{
+def InterpolateAtGeolocation(self, *args, **kwargs):
+    """Return the interpolated value at georeferenced coordinates.
+       See :cpp:func:`GDALRasterBand::InterpolateAtGeolocation`.
+
+       When srs is None, those georeferenced coordinates (geolocX, geolocY)
+       must be in the "natural" SRS of the dataset, that is the one returned by
+       GetSpatialRef() if there is a geotransform, GetGCPSpatialRef() if there are
+       GCPs, WGS 84 if there are RPC coefficients, or the SRS of the geolocation
+       array (generally WGS 84) if there is a geolocation array.
+       If that natural SRS is a geographic one, geolocX must be a longitude, and
+       geolocY a latitude. If that natural SRS is a projected one, geolocX must
+       be a easting, and geolocY a northing.
+
+       When srs is set to a non-None value, (geolocX, geolocY) must be
+       expressed in that CRS, and that tuple must be conformant with the
+       data-axis-to-crs-axis setting of srs, that is the one returned by
+       the :py:func:`osgeo.osr.SpatialReference.GetDataAxisToSRSAxisMapping().
+       If you want to be sure of the axis order, then make sure to call
+       ``srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)``
+       before calling this method, and in that case, geolocX must be a longitude
+       or an easting value, and geolocX a latitude or a northing value.
+
+       Parameters
+       ----------
+       geolocX : float
+           X coordinate of the position where interpolation should be done.
+           Longitude or easting in "natural" CRS if `srs` is None,
+           otherwise consistent with first axis of `srs`,
+           taking into account the data-axis-to-crs-axis mapping
+       geolocY : float
+           Y coordinate of the position where interpolation should be done.
+           Latitude or northing in "natural" CRS if `srs` is None,
+           otherwise consistent with second axis of `srs`,
+           taking into account the data-axis-to-crs-axis mapping
+       srs : osgeo.osr.SpatialReference
+           If set, override the natural CRS in which geolocX, geolocY are expressed
+       interpolation : GRIOResampleAlg (nearest, bilinear, cubic, cubicspline)
+
+       Returns
+       -------
+       float:
+           Interpolated value, or ``None`` if it has any error.
+
+       Example
+       -------
+
+       >>> from osgeo import gdal, osr
+       >>> with gdal.Open("my.tif") as ds:
+       ...    wgs84_srs = osr.SpatialReference()
+       ...    wgs84_srs.SetFromUserInput("WGS84")
+       ...    wgs84_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+       ...    val = ds.GetRasterBand(1).InterpolateAtGeolocation(longitude_degree,
+                                                                 latitude_degree,
+                                                                 wgs84_srs,
+                                                                 gdal.GRIORA_Bilinear)
     """
 
     ret = $action(self, *args, **kwargs)

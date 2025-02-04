@@ -2043,8 +2043,14 @@ GML2OGRGeometry_XMLNode_Internal(const CPLXMLNode *psNode, const char *pszId,
         p.setX(dfCenterX - dfRadius);
         p.setY(dfCenterY);
         poCC->addPoint(&p);
+        p.setX(dfCenterX);
+        p.setY(dfCenterY + dfRadius);
+        poCC->addPoint(&p);
         p.setX(dfCenterX + dfRadius);
         p.setY(dfCenterY);
+        poCC->addPoint(&p);
+        p.setX(dfCenterX);
+        p.setY(dfCenterY - dfRadius);
         poCC->addPoint(&p);
         p.setX(dfCenterX - dfRadius);
         p.setY(dfCenterY);
@@ -2061,6 +2067,7 @@ GML2OGRGeometry_XMLNode_Internal(const CPLXMLNode *psNode, const char *pszId,
     /* -------------------------------------------------------------------- */
     if (EQUAL(pszBaseGeometry, "PointType") ||
         EQUAL(pszBaseGeometry, "Point") ||
+        EQUAL(pszBaseGeometry, "ElevatedPoint") ||
         EQUAL(pszBaseGeometry, "ConnectionPoint"))
     {
         auto poPoint = std::make_unique<OGRPoint>();

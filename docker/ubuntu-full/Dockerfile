@@ -24,7 +24,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     autoconf bash-completion libarmadillo-dev \
     libopenexr-dev libheif-dev \
     libdeflate-dev libblosc-dev liblz4-dev libbz2-dev \
-    libbrotli-dev libarchive-dev libaec-dev libavif-dev \
+    libbrotli-dev libarchive-dev libaec-dev libavif-dev libmuparser-dev \
     libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev
 
 # Build libkea
@@ -187,6 +187,10 @@ RUN DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
 # Build PROJ
 RUN DESTDIR=/build /buildscripts/bh-proj.sh
 
+# Download exprtk
+RUN curl -LO -fsS https://github.com/ArashPartow/exprtk/raw/refs/heads/release/exprtk.hpp \
+    && mv exprtk.hpp /usr/include
+
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
 ARG GDAL_REPOSITORY=lqh2307/gdal
@@ -215,7 +219,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     liblcms2-2 libpcre3 libcrypto++8 libfyba0 libkmlbase1 libkmlconvenience1 libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 \
     libmysqlclient21 libogdi4.1 libcfitsio10 libzstd1 bash bash-completion libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
-    python-is-python3 python3-pil \
+    libmuparser2v5 python-is-python3 python3-pil \
   && apt-get install -y --no-install-recommends \
     openjdk-17-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
@@ -265,6 +269,7 @@ COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/include/ ${PROJ_INSTALL_PREFIX
 COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/bin/ ${PROJ_INSTALL_PREFIX}/bin/
 COPY --from=builder  /build${PROJ_INSTALL_PREFIX}/lib/ ${PROJ_INSTALL_PREFIX}/lib/
 
+COPY --from=builder  /build/usr/share/bash-completion/ /usr/share/bash-completion/
 COPY --from=builder  /build/usr/share/bash-completion/ /usr/share/bash-completion/
 COPY --from=builder  /build/usr/share/java /usr/share/java
 COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
