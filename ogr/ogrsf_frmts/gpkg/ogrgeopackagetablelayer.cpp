@@ -4251,10 +4251,11 @@ static bool GetExtentFromRTree(sqlite3 *hDB, const std::string &osRTreeName,
 }
 
 /************************************************************************/
-/*                        GetExtent()                                   */
+/*                              IGetExtent()                            */
 /************************************************************************/
 
-OGRErr OGRGeoPackageTableLayer::GetExtent(OGREnvelope *psExtent, int bForce)
+OGRErr OGRGeoPackageTableLayer::IGetExtent(int /* iGeomField  */,
+                                           OGREnvelope *psExtent, bool bForce)
 {
     if (!m_bFeatureDefnCompleted)
         GetLayerDefn();
@@ -4360,7 +4361,7 @@ void OGRGeoPackageTableLayer::RecomputeExtent()
     delete m_poExtent;
     m_poExtent = nullptr;
     OGREnvelope sExtent;
-    GetExtent(&sExtent, true);
+    CPL_IGNORE_RET_VAL(GetExtent(&sExtent, true));
 }
 
 /************************************************************************/
@@ -5493,10 +5494,11 @@ OGRErr OGRGeoPackageTableLayer::Rename(const char *pszDstTableName)
 }
 
 /************************************************************************/
-/*                          SetSpatialFilter()                          */
+/*                         ISetSpatialFilter()                          */
 /************************************************************************/
 
-void OGRGeoPackageTableLayer::SetSpatialFilter(OGRGeometry *poGeomIn)
+OGRErr OGRGeoPackageTableLayer::ISetSpatialFilter(int /*iGeomField*/,
+                                                  const OGRGeometry *poGeomIn)
 
 {
     if (!m_bFeatureDefnCompleted)
@@ -5507,6 +5509,7 @@ void OGRGeoPackageTableLayer::SetSpatialFilter(OGRGeometry *poGeomIn)
 
         ResetReading();
     }
+    return OGRERR_NONE;
 }
 
 /************************************************************************/
@@ -9140,11 +9143,11 @@ static void OGR_GPKG_GeometryExtent3DAggregate_Finalize(sqlite3_context *)
 }
 
 /************************************************************************/
-/*                      GetExtent3D                                     */
+/*                            IGetExtent3D                              */
 /************************************************************************/
-OGRErr OGRGeoPackageTableLayer::GetExtent3D(int iGeomField,
-                                            OGREnvelope3D *psExtent3D,
-                                            int bForce)
+OGRErr OGRGeoPackageTableLayer::IGetExtent3D(int iGeomField,
+                                             OGREnvelope3D *psExtent3D,
+                                             bool bForce)
 {
 
     OGRFeatureDefn *poDefn = GetLayerDefn();
@@ -9155,13 +9158,6 @@ OGRErr OGRGeoPackageTableLayer::GetExtent3D(int iGeomField,
     RunDeferredCreationIfNecessary();
     if (!RunDeferredSpatialIndexUpdate())
     {
-        return OGRERR_FAILURE;
-    }
-
-    const int nGeomFieldCount = poDefn->GetGeomFieldCount();
-    if (iGeomField < 0 || iGeomField >= nGeomFieldCount)
-    {
-        CPLError(CE_Failure, CPLE_AppDefined, "Invalid value for iGeomField");
         return OGRERR_FAILURE;
     }
 
