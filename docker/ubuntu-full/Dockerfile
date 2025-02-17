@@ -7,7 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup build env for PROJ, GDAL, tileDB, PDFium, libjxl
 RUN apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y --fix-missing --no-install-recommends \
     build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf \
     zlib1g-dev libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev \
     libtiff-dev libopenjp2-7-dev libcairo2-dev \
@@ -229,7 +229,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Update distro
 ARG ARROW_SOVERSION=1600
 RUN apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y --fix-missing --no-install-recommends \
   # PROJ dependencies
     libsqlite3-0 libtiff6 libcurl4 \
     wget curl unzip ca-certificates \
