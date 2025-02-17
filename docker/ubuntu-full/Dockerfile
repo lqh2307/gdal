@@ -33,10 +33,15 @@ RUN mkdir -p /build_thirdparty
 ARG KEA_VERSION=1.5.2
 RUN wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
   && unzip -q kealib-${KEA_VERSION}.zip && cd kealib-kealib-${KEA_VERSION} \
-  && cmake . -G Ninja -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial \
-    -DHDF5_LIB_PATH=/usr/lib/x86_64-linux-gnu/hdf5/serial -DLIBKEA_WITH_GDAL=OFF \
-  && ninja && DESTDIR=/build_thirdparty ninja install \
+  && cmake . -G Ninja \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial \
+    -DHDF5_LIB_PATH=/usr/lib/x86_64-linux-gnu/hdf5/serial \
+    -DLIBKEA_WITH_GDAL=OFF \
+  && ninja \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd .. \
   && rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip \
@@ -48,8 +53,12 @@ ARG MONGO_C_DRIVER_VERSION=1.24.4
 RUN wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_C_DRIVER_VERSION}/mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz \
   && tar xzf mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz && cd mongo-c-driver-${MONGO_C_DRIVER_VERSION} \
   && mkdir -p build_cmake && cd build_cmake \
-  && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_TESTS=NO -DCMAKE_BUILD_TYPE=Release \
-  && ninja && DESTDIR=/build_thirdparty ninja install \
+  && cmake .. -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DENABLE_TESTS=NO \
+    -DCMAKE_BUILD_TYPE=Release \
+  && ninja \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf mongo-c-driver-${MONGO_C_DRIVER_VERSION} mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
@@ -61,8 +70,15 @@ ARG MONGOCXX_VERSION=3.8.1
 RUN wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERSION}.tar.gz \
   && tar xzf r${MONGOCXX_VERSION}.tar.gz && cd mongo-cxx-driver-r${MONGOCXX_VERSION} \
   && mkdir -p build_cmake && cd build_cmake \
-  && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBSONCXX_POLY_USE_BOOST=ON -DENABLE_TESTS=OFF -DMONGOCXX_ENABLE_SLOW_TESTS=NO -DCMAKE_BUILD_TYPE=Release -DBUILD_VERSION=${MONGOCXX_VERSION} \
-  && ninja && DESTDIR=/build_thirdparty ninja install \
+  && cmake .. -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBSONCXX_POLY_USE_BOOST=ON \
+    -DENABLE_TESTS=OFF \
+    -DMONGOCXX_ENABLE_SLOW_TESTS=NO \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_VERSION=${MONGOCXX_VERSION} \
+  && ninja \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf mongo-cxx-driver-r${MONGOCXX_VERSION} r${MONGOCXX_VERSION}.tar.gz \
@@ -80,8 +96,16 @@ RUN wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.g
   && patch -p0 < /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch \
   && patch -p1 < /buildscripts/tiledb-cmake-ccache.patch \
   && mkdir -p build_cmake && cd build_cmake \
-  && cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DTILEDB_WERROR=OFF -DTILEDB_SUPERBUILD=OFF -DTILEDB_TESTS=OFF -DCOMPILER_SUPPORTS_AVX2=FALSE -DOPENSSL_INCLUDE_DIR=/usr/include \
-  && ninja && DESTDIR=/build_thirdparty ninja install \
+  && cmake .. -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DTILEDB_WERROR=OFF \
+    -DTILEDB_SUPERBUILD=OFF \
+    -DTILEDB_TESTS=OFF \
+    -DCOMPILER_SUPPORTS_AVX2=FALSE \
+    -DOPENSSL_INCLUDE_DIR=/usr/include \
+  && ninja \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf TileDB-${TILEDB_VERSION} ${TILEDB_VERSION}.tar.gz \
@@ -113,8 +137,11 @@ RUN wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_
 RUN git clone --recurse-submodules --single-branch -b master https://github.com/lucianpls/QB3.git \
   && cd QB3/QB3lib \
   && mkdir -p build && cd build \
-  && cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
-  && ninja && DESTDIR=/build_thirdparty ninja install \
+  && cmake .. -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+  && ninja \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../../.. \
   && rm -rf QB3
@@ -129,8 +156,15 @@ RUN wget -q https://github.com/rouault/pdfium_build_gdal_3_10/releases/download/
 # Build libjxl
 RUN git clone --recurse-submodules --single-branch -b main https://github.com/libjxl/libjxl.git \
   && cd libjxl \
-  && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
-  && ninja && DESTDIR=/build_thirdparty ninja install \
+  && cmake -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF \
+    -DBUILD_TESTING=OFF \
+    -DJPEGXL_ENABLE_TOOLS=OFF \
+    -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
+  && ninja \
+  && DESTDIR=/build_thirdparty ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf libjxl /lib/x86_64-linux-gnu/libjxl*.a /build_thirdparty/lib/x86_64-linux-gnu/libjxl*.a
