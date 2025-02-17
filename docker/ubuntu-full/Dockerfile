@@ -25,8 +25,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     libopenexr-dev libheif-dev \
     libdeflate-dev libblosc-dev liblz4-dev libbz2-dev \
     libbrotli-dev libarchive-dev libaec-dev libavif-dev libmuparser-dev \
-    libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev \
-    libprotobuf-dev libre2-dev libutf8proc-dev libthrift-dev
+    libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev
 
 RUN mkdir -p /build_thirdparty
 
@@ -171,7 +170,6 @@ RUN git clone --recurse-submodules --single-branch -b main https://github.com/li
   && rm -rf libjxl /lib/x86_64-linux-gnu/libjxl*.a /build_thirdparty/lib/x86_64-linux-gnu/libjxl*.a
 
 # Install Arrow C++
-ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
 RUN wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-source-latest-jammy.deb \
   && apt-get install -y \
@@ -181,10 +179,10 @@ RUN wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-so
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
-    libarrow-dev=${ARROW_VERSION} \
-    libparquet-dev=${ARROW_VERSION} \
-    libarrow-acero-dev=${ARROW_VERSION} \
-    libarrow-dataset-dev=${ARROW_VERSION} \
+    libarrow-dev \
+    libparquet-dev \
+    libarrow-acero-dev \
+    libarrow-dataset-dev \
   && rm -rf ./apache-arrow-apt-source-latest-jammy.deb
 
 # Manually install ADBC packages from Ubuntu 22.04 as there are no 24.04 packages at time of writing
@@ -242,7 +240,6 @@ RUN apt-get update -y && apt-get upgrade -y \
     libmysqlclient21 libogdi4.1 libcfitsio10 libzstd1 bash bash-completion libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
     libmuparser2v5 python-is-python3 python3-pil python3-numpy \
-    libprotobuf23 libre2-9 libutf8proc2 libthrift-0.16.0 \
     openjdk-17-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/x86_64-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/x86_64-linux-gnu \
