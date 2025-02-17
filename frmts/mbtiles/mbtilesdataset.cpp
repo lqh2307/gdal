@@ -145,8 +145,6 @@ class MBTilesDataset final : public GDALPamDataset,
     bool m_bWriteBounds;
     CPLString m_osBounds;
     CPLString m_osCenter;
-    bool m_bMetadataUniqueIndex = false;
-    bool m_bTilesUniqueIndex = false;
     bool m_bWriteMinMaxZoom;
     MBTilesDataset *poMainDS;
     bool m_bGeoTransformValid;
@@ -1234,18 +1232,6 @@ CPLErr MBTilesDataset::FinalizeRasterRegistration()
                             dfGDALMaxX, dfGDALMaxY);
 
         m_papoOverviewDS[m_nZoomLevel - 1 - i] = poOvrDS;
-    }
-
-    if (m_bMetadataUniqueIndex)
-    {
-        char *pszSQL = "CREATE UNIQUE INDEX metadata_unique_index ON metadata (name)";
-        sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
-    }
-
-    if (m_bTilesUniqueIndex)
-    {
-        char *pszSQL = "CREATE UNIQUE INDEX tiles_unique_index ON tiles (zoom_level, tile_column, tile_row)";
-        sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
     }
 
     return CE_None;
@@ -3827,10 +3813,6 @@ void GDALRegister_MBTiles()
         "description='Override default value for bounds metadata item'/>"
         "  <Option name='CENTER' scope='raster,vector' type='string' "
         "description='Override default value for center metadata item'/>"
-        "  <Option name='METADATA_UNIQUE_INDEX' scope='raster,vector' type='boolean' "
-        "description='Create unique index for metadata table' default='NO'/>"
-        "  <Option name='TILES_UNIQUE_INDEX' scope='raster,vector' type='boolean' "
-        "description='Create unique index for tiles table' default='NO'/>"
 #ifdef HAVE_MVT_WRITE_SUPPORT
         MVT_MBTILES_COMMON_DSCO
 #endif

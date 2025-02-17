@@ -3362,8 +3362,6 @@ class OGRMVTWriterDataset final : public GDALDataset
     int m_nMVTVersion = 2;
     int m_nBuffer = 5 * knDEFAULT_EXTENT / 256;
     bool m_bGZip = true;
-    bool m_bMetadataUniqueIndex = false;
-    bool m_bTilesUniqueIndex = false;
     mutable CPLWorkerThreadPool m_oThreadPool;
     bool m_bThreadPoolOK = false;
     mutable GIntBig m_nTempTiles = 0;
@@ -5403,18 +5401,6 @@ bool OGRMVTWriterDataset::CreateOutput()
 
     bRet &= GenerateMetadata(oSetLayers.size(), oMapLayerProps);
 
-    if (m_bMetadataUniqueIndex)
-    {
-        const char *pszSQLMetadataIndex = "CREATE UNIQUE INDEX metadata_unique_index ON metadata (name)";
-        sqlite3_exec(m_hDBMBTILES, pszSQLMetadataIndex, nullptr, nullptr, nullptr);
-    }
-
-    if (m_bTilesUniqueIndex)
-    {
-        const char *pszSQLTilesIndex = "CREATE UNIQUE INDEX tiles_unique_index ON tiles (zoom_level, tile_column, tile_row)";
-        sqlite3_exec(m_hDBMBTILES, pszSQLTilesIndex, nullptr, nullptr, nullptr);
-    }
-
     return bRet;
 }
 
@@ -6438,10 +6424,6 @@ void RegisterOGRMVT()
         "description="
         "'For tilesets as directories of files, extension of "
         "tiles'/>" MVT_MBTILES_COMMON_DSCO
-        "  <Option name='METADATA_UNIQUE_INDEX' type='boolean' "
-        "description='Create unique index for metadata table' default='NO'/>"
-        "  <Option name='TILES_UNIQUE_INDEX' type='boolean' "
-        "description='Create unique index for tiles table' default='NO'/>"
         "  <Option name='BOUNDS' type='string' "
         "description='Override default value for bounds metadata item'/>"
         "  <Option name='CENTER' type='string' "
