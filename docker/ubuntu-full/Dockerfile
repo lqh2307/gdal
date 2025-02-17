@@ -7,7 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup build env for PROJ, GDAL, tileDB, PDFium, libjxl
 RUN apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --fix-missing --no-install-recommends \
+  && apt-get install -y \
     build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf \
     zlib1g-dev libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev \
     libtiff-dev libopenjp2-7-dev libcairo2-dev \
@@ -173,10 +173,10 @@ RUN git clone --recurse-submodules --single-branch -b main https://github.com/li
 ARG ARROW_VERSION=16.1.0-1
 ARG ARROW_SOVERSION=1600
 RUN wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-source-latest-jammy.deb \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     ./apache-arrow-apt-source-latest-jammy.deb \
   && apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
@@ -229,7 +229,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Update distro
 ARG ARROW_SOVERSION=1600
 RUN apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --fix-missing --no-install-recommends \
+  && apt-get install -y --fix-missing \
   # PROJ dependencies
     libsqlite3-0 libtiff6 libcurl4 \
     wget curl unzip ca-certificates \
@@ -246,10 +246,10 @@ RUN apt-get update -y && apt-get upgrade -y \
   && ln -s /usr/lib/x86_64-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/x86_64-linux-gnu \
   # Install Arrow C++
   && wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-source-latest-jammy.deb \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     ./apache-arrow-apt-source-latest-jammy.deb \
   && apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
