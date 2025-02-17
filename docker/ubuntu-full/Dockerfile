@@ -232,7 +232,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Update distro
 ARG ARROW_SOVERSION=1600
 RUN apt-get update -y && apt-get upgrade -y \
-  && apt-get install -y --fix-missing \
+  && apt-get install -y \
   # PROJ dependencies
     libsqlite3-0 libtiff6 libcurl4 \
     wget curl unzip ca-certificates \
