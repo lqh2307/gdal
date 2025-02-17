@@ -242,8 +242,8 @@ RUN apt-get update -y && apt-get upgrade -y \
     libmysqlclient21 libogdi4.1 libcfitsio10 libzstd1 bash bash-completion libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
     libmuparser2v5 python-is-python3 python3-pil python3-numpy \
-    openjdk-17-jre \
     libprotobuf23 libre2-9 libutf8proc2 libthrift-0.16.0 \
+    openjdk-17-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/x86_64-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/x86_64-linux-gnu \
   # Install Arrow C++
