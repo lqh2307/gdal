@@ -3074,7 +3074,7 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
     sqlite3_free(pszSQL);
 
     const char *pszAttribution = CSLFetchNameValueDef(
-        papszOptions, "ATTRIBUTION", CPLGetBasename(pszFilename));
+        papszOptions, "ATTRIBUTION", CPLGetBasenameSafe(pszFilename).c_str());
     pszSQL = sqlite3_mprintf(
         "INSERT INTO metadata (name, value) VALUES ('attribution', '%q')",
         pszAttribution);

@@ -6226,7 +6226,7 @@ GDALDataset *OGRMVTWriterDataset::Create(const char *pszFilename, int nXSize,
     poDS->m_osDescription = CSLFetchNameValueDef(papszOptions, "DESCRIPTION",
                                                  poDS->m_osDescription.c_str());
     poDS->m_osAttribution = CSLFetchNameValueDef(papszOptions, "ATTRIBUTION",
-                                                 CPLGetBasename(pszFilename));
+                                                 CPLGetBasenameSafe(pszFilename).c_str());
     poDS->m_osVersion = CSLFetchNameValueDef(papszOptions, "VERSION",
                                                  poDS->m_osVersion.c_str());
     poDS->m_osType = CSLFetchNameValueDef(papszOptions, "TYPE",
