@@ -179,6 +179,10 @@ RUN wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-so
     libarrow${ARROW_SOVERSION} \
     libparquet${ARROW_SOVERSION} \
     libarrow-dataset${ARROW_SOVERSION} \
+    libprotobuf-dev \
+    libre2-dev \
+    libutf8proc-dev \
+    libthrift-dev \
     libarrow-dev \
     libparquet-dev \
     libarrow-acero-dev \
