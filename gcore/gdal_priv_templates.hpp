@@ -21,11 +21,8 @@
 #include <cstdint>
 #include <limits>
 #include <type_traits>
-<<<<<<< HEAD
-=======
 
 #include "cpl_float.h"
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
 /************************************************************************/
 /*                        GDALGetDataLimits()                           */
@@ -260,8 +257,6 @@ template <class Tin> struct sGDALCopyWord<Tin, double>
     }
 };
 
-<<<<<<< HEAD
-=======
 // Floating point input and output, converting between indentical types: simply copy
 
 template <> struct sGDALCopyWord<GFloat16, GFloat16>
@@ -306,7 +301,6 @@ template <> struct sGDALCopyWord<GFloat16, double>
     }
 };
 
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 template <> struct sGDALCopyWord<float, double>
 {
     static inline void f(const float fValueIn, double &dfValueOut)

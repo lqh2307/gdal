@@ -420,14 +420,11 @@ __attribute__((optimize("tree-vectorize")))
 #if defined(__GNUC__)
 __attribute__((noinline))
 #endif
-<<<<<<< HEAD
-=======
 #if defined(__clang__) && !defined(__INTEL_CLANG_COMPILER)
 // clang++ -O2 -fsanitize=undefined fails to vectorize, ignore that warning
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpass-failed"
 #endif
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 static void
 GDALInterleave3Byte_SSSE3(const uint8_t *CPL_RESTRICT pSrc,
                           uint8_t *CPL_RESTRICT pDst, size_t nIters)
@@ -442,12 +439,9 @@ GDALInterleave3Byte_SSSE3(const uint8_t *CPL_RESTRICT pSrc,
         pDst[3 * i + 2] = pSrc[i + 2 * nIters];
     }
 }
-<<<<<<< HEAD
-=======
 #if defined(__clang__) && !defined(__INTEL_CLANG_COMPILER)
 #pragma clang diagnostic pop
 #endif
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
 #endif
 

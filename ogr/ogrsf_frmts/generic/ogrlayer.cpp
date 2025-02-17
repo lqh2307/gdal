@@ -2416,28 +2416,19 @@ void OGRLayer::PrepareStartTransaction()
 /*                          FinishRollbackTransaction()                 */
 /************************************************************************/
 
-<<<<<<< HEAD
-void OGRLayer::FinishRollbackTransaction()
-=======
 void OGRLayer::FinishRollbackTransaction(const std::string &osSavepointName)
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 {
 
     // Deleted fields can be safely removed from the storage after being restored.
     std::vector<int> toBeRemoved;
 
-<<<<<<< HEAD
-=======
     bool bSavepointFound = false;
 
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     // Loop through all changed fields and reset them to their previous state.
     for (int i = static_cast<int>(m_apoFieldDefnChanges.size()) - 1; i >= 0;
          i--)
     {
         auto &oFieldChange = m_apoFieldDefnChanges[i];
-<<<<<<< HEAD
-=======
 
         if (!osSavepointName.empty())
         {
@@ -2451,7 +2442,6 @@ void OGRLayer::FinishRollbackTransaction(const std::string &osSavepointName)
             }
         }
 
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         CPLAssert(oFieldChange.poFieldDefn);
         const char *pszName = oFieldChange.poFieldDefn->GetNameRef();
         const int iField = oFieldChange.iField;
@@ -2539,22 +2529,17 @@ void OGRLayer::FinishRollbackTransaction(const std::string &osSavepointName)
         m_apoFieldDefnChanges.erase(m_apoFieldDefnChanges.begin() + i);
     }
 
-<<<<<<< HEAD
-=======
     /**********************************************************************/
     /* Reset geometry fields to their previous state.                    */
     /**********************************************************************/
 
     bSavepointFound = false;
 
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     // Loop through all changed geometry fields and reset them to their previous state.
     for (int i = static_cast<int>(m_apoGeomFieldDefnChanges.size()) - 1; i >= 0;
          i--)
     {
         auto &oGeomFieldChange = m_apoGeomFieldDefnChanges[i];
-<<<<<<< HEAD
-=======
 
         if (!osSavepointName.empty())
         {
@@ -2567,7 +2552,6 @@ void OGRLayer::FinishRollbackTransaction(const std::string &osSavepointName)
                 continue;
             }
         }
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         const char *pszName = oGeomFieldChange.poFieldDefn->GetNameRef();
         const int iGeomField = oGeomFieldChange.iField;
         if (iGeomField >= 0)

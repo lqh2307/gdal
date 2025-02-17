@@ -4112,20 +4112,8 @@ OGRErr OGRSQLiteBaseDataSource::RollbackTransaction()
         return OGRERR_FAILURE;
     }
 
-<<<<<<< HEAD
-    bUserTransactionActive = false;
-    CPLAssert(nSoftTransactionLevel == 1);
-
-    // Loop through all layers and finish transaction
-    for (int i = 0; i < GetLayerCount(); i++)
-    {
-        OGRLayer *poLayer = GetLayer(i);
-        poLayer->FinishRollbackTransaction();
-    }
-=======
     m_bUserTransactionActive = false;
     CPLAssert(m_nSoftTransactionLevel == 1);
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
     return SoftRollbackTransaction();
 }
@@ -4155,27 +4143,15 @@ OGRErr OGRSQLiteDataSource::RollbackTransaction()
     return OGRSQLiteBaseDataSource::RollbackTransaction();
 }
 
-<<<<<<< HEAD
-bool OGRSQLiteDataSource::IsInTransaction() const
-{
-    return nSoftTransactionLevel > 0;
-=======
 bool OGRSQLiteBaseDataSource::IsInTransaction() const
 {
     return m_nSoftTransactionLevel > 0;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 }
 
 /************************************************************************/
-/*                        SoftStartTransaction()                        */
-/*                                                                      */
-/*      Create a transaction scope.  If we already have a               */
-/*      transaction active this isn't a real transaction, but just      */
-/*      an increment to the scope count.                                */
 /************************************************************************/
 
 OGRErr OGRSQLiteBaseDataSource::SoftStartTransaction()
-
 {
     m_nSoftTransactionLevel++;
 

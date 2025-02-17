@@ -48,12 +48,8 @@ class GDALRasterAlgorithm final : public GDALAlgorithm
         RegisterSubAlgorithm<GDALRasterOverviewAlgorithm>();
         RegisterSubAlgorithm<GDALRasterPipelineAlgorithm>();
         RegisterSubAlgorithm<GDALRasterReprojectAlgorithmStandalone>();
-<<<<<<< HEAD
-        RegisterSubAlgorithm<GDALRasterBuildVRTAlgorithm>();
-=======
         RegisterSubAlgorithm<GDALRasterMosaicAlgorithm>();
         RegisterSubAlgorithm<GDALRasterStackAlgorithm>();
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     }
 
   private:

@@ -6235,13 +6235,8 @@ GDALDataset *OGRMVTWriterDataset::Create(const char *pszFilename, int nXSize,
         }
     }
 
-<<<<<<< HEAD
-    poDS->m_osName = CSLFetchNameValueDef(papszOptions, "NAME",
-                                                 CPLGetBasename(pszFilename));
-=======
-    poDS->m_osName = CSLFetchNameValueDef(
-        papszOptions, "NAME", CPLGetBasenameSafe(pszFilename).c_str());
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
+    poDS->m_osName = CSLFetchNameValueDef(papszOptions, "NAME", 
+                                                 CPLGetBasenameSafe(pszFilename).c_str());
     poDS->m_osDescription = CSLFetchNameValueDef(papszOptions, "DESCRIPTION",
                                                  poDS->m_osDescription.c_str());
     poDS->m_osAttribution = CSLFetchNameValueDef(papszOptions, "ATTRIBUTION",

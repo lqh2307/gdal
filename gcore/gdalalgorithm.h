@@ -1158,15 +1158,12 @@ class CPL_DLL GDALAlgorithmArg /* non-final */
         return m_decl.GetChoices();
     }
 
-<<<<<<< HEAD
-=======
     /** Alias for GDALAlgorithmArgDecl::GetHiddenChoices() */
     inline const std::vector<std::string> &GetHiddenChoices() const
     {
         return m_decl.GetHiddenChoices();
     }
 
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
     /** Return auto completion choices, if a auto completion function has been
      * registered.
      */

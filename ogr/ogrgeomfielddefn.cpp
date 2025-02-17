@@ -157,12 +157,6 @@ OGRGeomFieldDefn &OGRGeomFieldDefn::operator=(const OGRGeomFieldDefn &oOther)
 {
     if (&oOther != this)
     {
-<<<<<<< HEAD
-        SetName(oOther.pszName);
-        SetType(oOther.eGeomType);
-        SetSpatialRef(oOther.poSRS);
-        SetNullable(oOther.bNullable);
-=======
         CPLFree(pszName);
         pszName = CPLStrdup(oOther.pszName);
         eGeomType = oOther.eGeomType;
@@ -172,7 +166,6 @@ OGRGeomFieldDefn &OGRGeomFieldDefn::operator=(const OGRGeomFieldDefn &oOther)
             const_cast<OGRSpatialReference *>(poSRS)->Dereference();
         poSRS = oOther.poSRS;
         bNullable = oOther.bNullable;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         m_oCoordPrecision = oOther.m_oCoordPrecision;
         m_bSealed = oOther.m_bSealed;
         bIgnore = oOther.bIgnore;

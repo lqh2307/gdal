@@ -126,14 +126,9 @@ OGRFieldDefn::OGRFieldDefn(const OGRFieldDefn &oOther)
       pszDefault(oOther.pszDefault ? CPLStrdup(oOther.pszDefault) : nullptr),
       bIgnore(oOther.bIgnore), eSubType(oOther.eSubType),
       bNullable(oOther.bNullable), bUnique(oOther.bUnique),
-<<<<<<< HEAD
-      m_osDomainName(oOther.m_osDomainName), m_osComment(oOther.m_osComment),
-      m_nTZFlag(oOther.m_nTZFlag), m_bSealed(oOther.m_bSealed)
-=======
       m_bGenerated(oOther.m_bGenerated), m_osDomainName(oOther.m_osDomainName),
       m_osComment(oOther.m_osComment), m_nTZFlag(oOther.m_nTZFlag),
       m_bSealed(oOther.m_bSealed)
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 {
 }
 
@@ -165,10 +160,7 @@ OGRFieldDefn &OGRFieldDefn::operator=(const OGRFieldDefn &oOther)
         eSubType = oOther.eSubType;
         bNullable = oOther.bNullable;
         bUnique = oOther.bUnique;
-<<<<<<< HEAD
-=======
         m_bGenerated = oOther.m_bGenerated;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         m_osDomainName = oOther.m_osDomainName;
         m_osComment = oOther.m_osComment;
         m_nTZFlag = oOther.m_nTZFlag;

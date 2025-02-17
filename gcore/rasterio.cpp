@@ -715,10 +715,6 @@ CPLErr GDALRasterBand::IRasterIO(GDALRWFlag eRWFlag, int nXOff, int nYOff,
                 {
                     /* type to type conversion ... ouch, this is expensive way
                     of handling single words */
-<<<<<<< HEAD
-
-=======
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
                     GDALCopyWords64(static_cast<GByte *>(pData) + iBufOffset,
                                     eBufType, 0, pabyDstBlock + iDstOffset,
                                     eDataType, 0, 1);
@@ -5915,18 +5911,12 @@ static void GDALTranspose2D(const void *pSrc, GDALDataType eSrcType, DST *pDst,
         case GDT_Int32:    CALL_GDALTranspose2D_internal(int32_t); break;
         case GDT_UInt64:   CALL_GDALTranspose2D_internal(uint64_t); break;
         case GDT_Int64:    CALL_GDALTranspose2D_internal(int64_t); break;
-<<<<<<< HEAD
-=======
         case GDT_Float16:  CALL_GDALTranspose2D_internal(GFloat16); break;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         case GDT_Float32:  CALL_GDALTranspose2D_internal(float); break;
         case GDT_Float64:  CALL_GDALTranspose2D_internal(double); break;
         case GDT_CInt16:   CALL_GDALTranspose2DComplex_internal(int16_t); break;
         case GDT_CInt32:   CALL_GDALTranspose2DComplex_internal(int32_t); break;
-<<<<<<< HEAD
-=======
         case GDT_CFloat16: CALL_GDALTranspose2DComplex_internal(GFloat16); break;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         case GDT_CFloat32: CALL_GDALTranspose2DComplex_internal(float); break;
         case GDT_CFloat64: CALL_GDALTranspose2DComplex_internal(double); break;
         case GDT_Unknown:
@@ -5987,14 +5977,11 @@ __attribute__((optimize("tree-vectorize")))
 #if defined(__GNUC__)
 __attribute__((noinline))
 #endif
-<<<<<<< HEAD
-=======
 #if defined(__clang__) && !defined(__INTEL_CLANG_COMPILER)
 // clang++ -O2 -fsanitize=undefined fails to vectorize, ignore that warning
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpass-failed"
 #endif
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 static void
 GDALInterleave2Byte(const uint8_t *CPL_RESTRICT pSrc,
                     uint8_t *CPL_RESTRICT pDst, size_t nIters)
@@ -6008,12 +5995,9 @@ GDALInterleave2Byte(const uint8_t *CPL_RESTRICT pSrc,
         pDst[2 * i + 1] = pSrc[i + 1 * nIters];
     }
 }
-<<<<<<< HEAD
-=======
 #if defined(__clang__) && !defined(__INTEL_CLANG_COMPILER)
 #pragma clang diagnostic pop
 #endif
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
 #endif
 
@@ -6096,14 +6080,11 @@ __attribute__((optimize("tree-vectorize")))
 #if defined(__GNUC__)
 __attribute__((noinline))
 #endif
-<<<<<<< HEAD
-=======
 #if defined(__clang__) && !defined(__INTEL_CLANG_COMPILER)
 // clang++ -O2 -fsanitize=undefined fails to vectorize, ignore that warning
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpass-failed"
 #endif
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 static void
 GDALInterleave4Byte(const uint8_t *CPL_RESTRICT pSrc,
                     uint8_t *CPL_RESTRICT pDst, size_t nIters)
@@ -6119,12 +6100,9 @@ GDALInterleave4Byte(const uint8_t *CPL_RESTRICT pSrc,
         pDst[4 * i + 3] = pSrc[i + 3 * nIters];
     }
 }
-<<<<<<< HEAD
-=======
 #if defined(__clang__) && !defined(__INTEL_CLANG_COMPILER)
 #pragma clang diagnostic pop
 #endif
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
 #endif
 
@@ -6195,18 +6173,12 @@ void GDALTranspose2D(const void *pSrc, GDALDataType eSrcType, void *pDst,
         case GDT_Int32:    CALL_GDALTranspose2D_internal(int32_t, false); break;
         case GDT_UInt64:   CALL_GDALTranspose2D_internal(uint64_t, false); break;
         case GDT_Int64:    CALL_GDALTranspose2D_internal(int64_t, false); break;
-<<<<<<< HEAD
-=======
         case GDT_Float16:  CALL_GDALTranspose2D_internal(GFloat16, false); break;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         case GDT_Float32:  CALL_GDALTranspose2D_internal(float, false); break;
         case GDT_Float64:  CALL_GDALTranspose2D_internal(double, false); break;
         case GDT_CInt16:   CALL_GDALTranspose2D_internal(int16_t, true); break;
         case GDT_CInt32:   CALL_GDALTranspose2D_internal(int32_t, true); break;
-<<<<<<< HEAD
-=======
         case GDT_CFloat16: CALL_GDALTranspose2D_internal(GFloat16, true); break;
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
         case GDT_CFloat32: CALL_GDALTranspose2D_internal(float, true); break;
         case GDT_CFloat64: CALL_GDALTranspose2D_internal(double, true); break;
         case GDT_Unknown:

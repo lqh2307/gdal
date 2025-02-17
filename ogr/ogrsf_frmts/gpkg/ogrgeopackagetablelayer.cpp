@@ -1847,16 +1847,9 @@ OGRErr OGRGeoPackageTableLayer::CreateField(const OGRFieldDefn *poField,
     {
         m_apoFieldDefnChanges.emplace_back(
             std::make_unique<OGRFieldDefn>(oFieldDefn),
-<<<<<<< HEAD
-            m_poFeatureDefn->GetFieldCount() - 1, FieldChangeType::ADD_FIELD);
-    }
-
-    m_abGeneratedColumns.resize(m_poFeatureDefn->GetFieldCount());
-=======
             m_poFeatureDefn->GetFieldCount() - 1, FieldChangeType::ADD_FIELD,
             m_poDS->GetCurrentSavepoint());
     }
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
     if (m_pszFidColumn != nullptr &&
         EQUAL(oFieldDefn.GetNameRef(), m_pszFidColumn))
@@ -6593,30 +6586,6 @@ OGRErr OGRGeoPackageTableLayer::DeleteField(int iFieldToDelete)
 
         if (eErr == OGRERR_NONE)
         {
-<<<<<<< HEAD
-
-            if (m_poDS->IsInTransaction())
-            {
-                auto poFieldDefn{whileUnsealing(m_poFeatureDefn)
-                                     ->StealFieldDefn(iFieldToDelete)};
-                if (poFieldDefn)
-                {
-                    m_apoFieldDefnChanges.emplace_back(
-                        std::move(poFieldDefn), iFieldToDelete,
-                        FieldChangeType::DELETE_FIELD);
-                }
-                else
-                {
-                    eErr = OGRERR_FAILURE;
-                }
-            }
-            else
-            {
-                eErr = whileUnsealing(m_poFeatureDefn)
-                           ->DeleteFieldDefn(iFieldToDelete);
-            }
-=======
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
             if (m_poDS->IsInTransaction())
             {
@@ -7121,12 +7090,8 @@ OGRErr OGRGeoPackageTableLayer::AlterFieldDefn(int iFieldToAlter,
             {
                 m_apoFieldDefnChanges.emplace_back(
                     std::make_unique<OGRFieldDefn>(poFieldDefnToAlter),
-<<<<<<< HEAD
-                    iFieldToAlter, FieldChangeType::ALTER_FIELD);
-=======
                     iFieldToAlter, FieldChangeType::ALTER_FIELD,
                     m_poDS->GetCurrentSavepoint());
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
             }
 
             auto oTemporaryUnsealer(poFieldDefnToAlter->GetTemporaryUnsealer());

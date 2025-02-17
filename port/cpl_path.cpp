@@ -909,94 +909,9 @@ std::string CPLFormCIFilenameSafe(const char *pszPath, const char *pszBasename,
     if (pszExtension != nullptr)
         nLen += strlen(pszExtension);
 
-<<<<<<< HEAD
-    size_t nSuffixPos = 0;
-    if (STARTS_WITH_CI(pszPath, "/vsicurl/http"))
-    {
-        const char *pszQuestionMark = strchr(pszPath, '?');
-        if (pszQuestionMark)
-        {
-            nSuffixPos = static_cast<size_t>(pszQuestionMark - pszPath);
-            nLenPath = nSuffixPos;
-        }
-        pszAddedPathSep = "/";
-    }
-
-    if (!CPLIsFilenameRelative(pszPath) && pszBasename[0] == '.' &&
-        pszBasename[1] == '.' &&
-        (pszBasename[2] == 0 || pszBasename[2] == '\\' ||
-         pszBasename[2] == '/'))
-    {
-        // "/a/b/" + "..[/something]" --> "/a[/something]"
-        // "/a/b" + "..[/something]" --> "/a[/something]"
-        if (pszPath[nLenPath - 1] == '\\' || pszPath[nLenPath - 1] == '/')
-            nLenPath--;
-        while (true)
-        {
-            const char *pszBasenameOri = pszBasename;
-            const size_t nLenPathOri = nLenPath;
-            while (nLenPath > 0 && pszPath[nLenPath - 1] != '\\' &&
-                   pszPath[nLenPath - 1] != '/')
-            {
-                nLenPath--;
-            }
-            if (nLenPath == 1 && pszPath[0] == '/')
-            {
-                pszBasename += 2;
-                if (pszBasename[0] == '/' || pszBasename[0] == '\\')
-                    pszBasename++;
-                if (*pszBasename == '.')
-                {
-                    pszBasename = pszBasenameOri;
-                    nLenPath = nLenPathOri;
-                    if (pszAddedPathSep[0] == 0)
-                        pszAddedPathSep =
-                            pszPath[0] == '/'
-                                ? "/"
-                                : VSIGetDirectorySeparator(pszPath);
-                }
-                break;
-            }
-            else if ((nLenPath > 1 && pszPath[0] == '/') ||
-                     (nLenPath > 2 && pszPath[1] == ':') ||
-                     (nLenPath > 6 && strncmp(pszPath, "\\\\$\\", 4) == 0))
-            {
-                nLenPath--;
-                pszBasename += 2;
-                if ((pszBasename[0] == '/' || pszBasename[0] == '\\') &&
-                    pszBasename[1] == '.' && pszBasename[2] == '.')
-                {
-                    pszBasename++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            else
-            {
-                // cppcheck-suppress redundantAssignment
-                pszBasename = pszBasenameOri;
-                nLenPath = nLenPathOri;
-                if (pszAddedPathSep[0] == 0)
-                    pszAddedPathSep = pszPath[0] == '/'
-                                          ? "/"
-                                          : VSIGetDirectorySeparator(pszPath);
-                break;
-            }
-        }
-    }
-    else if (nLenPath > 0 && pszPath[nLenPath - 1] != '/' &&
-             pszPath[nLenPath - 1] != '\\')
-    {
-        if (pszAddedPathSep[0] == 0)
-            pszAddedPathSep = VSIGetDirectorySeparator(pszPath);
-    }
-=======
     char *pszFilename = static_cast<char *>(VSI_MALLOC_VERBOSE(nLen));
     if (pszFilename == nullptr)
         return "";
->>>>>>> e502e9a7b930984a6e19e60bb6020ea6fbc1392a
 
     if (pszExtension == nullptr)
         pszExtension = "";
