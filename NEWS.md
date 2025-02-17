@@ -10094,7 +10094,3 @@ Python bindings:
  * fix Dataset.ReadAsRaster() on CInt16 data type (#82)
  * adding overviewLevel option to WarpOptions
  * add noGCP options to gdal.Translate()
-
-# GDAL 2.x and older
-
-Consult [NEWS-2.x.md](NEW-2.x.md)
