@@ -25,7 +25,8 @@ RUN apt-get update -y && apt-get upgrade -y \
     libopenexr-dev libheif-dev \
     libdeflate-dev libblosc-dev liblz4-dev libbz2-dev \
     libbrotli-dev libarchive-dev libaec-dev libavif-dev libmuparser-dev \
-    libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev
+    libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev \
+    libprotobuf-dev libre2-dev libutf8proc-dev libthrift-dev
 
 RUN mkdir -p /build_thirdparty
 
@@ -242,6 +243,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
     libmuparser2v5 python-is-python3 python3-pil python3-numpy \
     openjdk-17-jre \
+    libprotobuf23 libre2-9 libutf8proc2 libthrift-0.16.0 \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/x86_64-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/x86_64-linux-gnu \
   # Install Arrow C++
