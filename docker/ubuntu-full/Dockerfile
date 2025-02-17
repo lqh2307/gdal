@@ -288,7 +288,6 @@ COPY --from=builder  /build/usr/local/include/ /usr/local/include/
 COPY --from=builder  /build/usr/local/bin/ /usr/local/bin/
 COPY --from=builder  /build/usr/local/lib/ /usr/local/lib/
 COPY --from=builder  /build/usr/share/bash-completion/ /usr/share/bash-completion/
-COPY --from=builder  /build/usr/share/bash-completion/ /usr/share/bash-completion/
 COPY --from=builder  /build/usr/share/java /usr/share/java
 COPY --from=builder  /build/usr/share/gdal/ /usr/share/gdal/
 COPY --from=builder  /build/usr/include/ /usr/include/
