@@ -8,23 +8,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Setup build env for PROJ, GDAL, tileDB, PDFium, libjxl
 RUN apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
-    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf \
-    zlib1g-dev libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev \
-    libtiff-dev libopenjp2-7-dev libcairo2-dev \
-    python3-dev python3-numpy python3-setuptools \
-    libpng-dev libjpeg-dev libgif-dev liblzma-dev libgeos-dev \
-    curl libxml2-dev libexpat-dev libxerces-c-dev \
-    libnetcdf-dev libpoppler-dev libpoppler-private-dev \
-    libspatialite-dev librasterlite2-dev swig ant libhdf4-alt-dev libhdf5-serial-dev \
-    libfreexl-dev unixodbc-dev mdbtools-dev libwebp-dev \
-    liblcms2-2 libpcre3-dev libcrypto++-dev libfyba-dev \
-    libkml-dev libmysqlclient-dev libogdi-dev \
-    libcfitsio-dev openjdk-17-jdk libzstd-dev \
-    libpq-dev libssl-dev libboost-dev \
-    autoconf bash-completion libarmadillo-dev \
-    libopenexr-dev libheif-dev \
-    libdeflate-dev libblosc-dev liblz4-dev libbz2-dev \
-    libbrotli-dev libarchive-dev libaec-dev libavif-dev libmuparser-dev \
+    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf zlib1g-dev \
+    libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev libtiff-dev libopenjp2-7-dev libcairo2-dev python3-dev \
+    python3-numpy python3-setuptools libpng-dev libjpeg-dev libgif-dev liblzma-dev libgeos-dev curl libxml2-dev \
+    libexpat-dev libxerces-c-dev libnetcdf-dev libpoppler-dev libpoppler-private-dev libspatialite-dev librasterlite2-dev \
+    swig ant libhdf4-alt-dev libhdf5-serial-dev libfreexl-dev unixodbc-dev  mdbtools-dev libwebp-dev liblcms2-2 libpcre3-dev \
+    libcrypto++-dev libfyba-dev libkml-dev libmysqlclient-dev libogdi-dev libcfitsio-dev openjdk-17-jdk libzstd-dev libpq-dev \
+    libssl-dev libboost-dev autoconf bash-completion libarmadillo-dev libopenexr-dev libheif-dev libdeflate-dev libblosc-dev \
+    liblz4-dev libbz2-dev libbrotli-dev libarchive-dev libaec-dev libavif-dev libmuparser-dev \
     libspdlog-dev libmagic-dev liblcms2-dev libgflags-dev
 
 RUN mkdir -p /build_thirdparty
@@ -123,15 +114,6 @@ RUN wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE
   && for i in /build_thirdparty/usr/lib/*; do strip -s ${i} 2>/dev/null || /bin/true; done \
   && cd .. \
   && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} ${OPENDRIVE_VERSION}.tar.gz
-
-# Build file-geodatabase
-RUN wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
-  && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
-  && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
-  && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
-  && cp /usr/local/FileGDB_API/include/* /usr/include \
-  && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz
 
 # Build libqb3
 RUN git clone --recurse-submodules --single-branch -b master https://github.com/lucianpls/QB3.git \
