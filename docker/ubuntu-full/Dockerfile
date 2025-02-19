@@ -197,7 +197,7 @@ RUN DESTDIR=/build /buildscripts/bh-proj.sh
 
 # Download exprtk
 RUN curl -LO -fsS https://github.com/ArashPartow/exprtk/raw/refs/heads/release/exprtk.hpp \
-    && mv exprtk.hpp /usr/include
+  && mv exprtk.hpp /usr/include
 
 # Build GDAL
 ARG GDAL_VERSION=1.0.0
