@@ -1,15 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for ogrinfo -json output",
-
   "oneOf": [
     {
       "$ref": "#/definitions/dataset"
     }
   ],
-
   "definitions": {
-
     "dataset": {
       "type": "object",
       "properties": {
@@ -48,7 +45,6 @@
       ],
       "additionalProperties": false
     },
-
     "layer": {
       "type": "object",
       "properties": {
@@ -91,7 +87,6 @@
       ],
       "additionalProperties": false
     },
-
     "metadata": {
       "type": "object",
       "$comment": "Object whose keys are metadata domain names. The empty string is a valid metadata domain name, and is used for the default domain.",
@@ -101,7 +96,6 @@
         }
       }
     },
-
     "metadataDomain": {
       "$comment": " The values of a metadadomain are key: string pairs, or arbitrary JSON objects for metadata domain names starting with the \"json:\" prefix.",
       "any": [
@@ -113,7 +107,6 @@
         }
       ]
     },
-
     "field": {
       "type": "object",
       "properties": {
@@ -163,7 +156,6 @@
       ],
       "additionalProperties": false
     },
-
     "fieldType": {
       "enum": [
         "Integer",
@@ -180,7 +172,6 @@
         "DateTime"
       ]
     },
-
     "fieldSubType": {
       "enum": [
         "None",
@@ -191,7 +182,6 @@
         "UUID"
       ]
     },
-
     "geometryField": {
       "type": "object",
       "properties": {
@@ -285,7 +275,6 @@
       ],
       "additionalProperties": false
     },
-
     "coordinateSystem": {
       "type": "object",
       "properties": {
@@ -313,7 +302,6 @@
       ],
       "additionalProperties": false
     },
-
     "domains": {
       "type": "object",
       "patternProperties": {
@@ -323,14 +311,12 @@
       },
       "additionalProperties": false
     },
-
     "keyValueDict": {
       "type": "object",
       "patternProperties": {
         "^.*$": {}
       }
     },
-
     "domain": {
       "type": "object",
       "properties": {
@@ -411,7 +397,6 @@
       ],
       "additionalProperties": false
     },
-
     "group": {
       "type": "object",
       "properties": {
@@ -437,7 +422,6 @@
       ],
       "additionalProperties": false
     },
-
     "relationships": {
       "type": "object",
       "patternProperties": {
@@ -447,7 +431,6 @@
       },
       "additionalProperties": false
     },
-
     "relationship": {
       "type": "object",
       "properties": {

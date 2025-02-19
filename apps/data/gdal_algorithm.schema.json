@@ -2,15 +2,12 @@
   "$id": "https://gdal.org/gdal_algorithm.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Validate the output of the 'gdal [command] [subcommand] --json-usage'",
-
   "oneOf": [
     {
       "$ref": "#/definitions/algorithm"
     }
   ],
-
   "definitions": {
-
     "algorithm": {
       "type": "object",
       "properties": {
@@ -84,7 +81,6 @@
       ],
       "additionalProperties": false
     },
-
     "argument": {
       "type": "object",
       "properties": {
@@ -193,6 +189,5 @@
       ],
       "additionalProperties": false
     }
-
   }
 }
