@@ -8,7 +8,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Setup build env for PROJ, GDAL, tileDB, PDFium, libjxl
 RUN apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
-    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf zlib1g-dev \
+    build-essential ca-certificates ccache git ninja-build cmake wget unzip libtool automake patchelf zlib1g-dev lsb-release \
     libsqlite3-dev pkg-config sqlite3 libcurl4-openssl-dev libtiff-dev libopenjp2-7-dev libcairo2-dev python3-dev \
     python3-numpy python3-setuptools libpng-dev libjpeg-dev libgif-dev liblzma-dev libgeos-dev curl libxml2-dev \
     libexpat-dev libxerces-c-dev libnetcdf-dev libpoppler-dev libpoppler-private-dev libspatialite-dev librasterlite2-dev \
@@ -153,9 +153,9 @@ RUN git clone --recurse-submodules --single-branch -b main https://github.com/li
 
 # Install Arrow C++
 ARG ARROW_SOVERSION=1600
-RUN wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-source-latest-jammy.deb \
+RUN wget -q https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    ./apache-arrow-apt-source-latest-jammy.deb \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
@@ -169,7 +169,7 @@ RUN wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-so
     libparquet-dev \
     libarrow-acero-dev \
     libarrow-dataset-dev \
-  && rm -rf ./apache-arrow-apt-source-latest-jammy.deb
+  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Manually install ADBC packages from Ubuntu 22.04 as there are no 24.04 packages at time of writing
 RUN curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
@@ -216,23 +216,23 @@ ARG ARROW_SOVERSION=1600
 RUN apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
   # PROJ dependencies
-    libsqlite3-0 libtiff6 libcurl4 \
-    wget curl unzip ca-certificates \
+    libsqlite3-0 libtiff6 libcurl4 lsb-release wget curl unzip ca-certificates \
   # GDAL dependencies
     libopenjp2-7 libcairo2 libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
-    libxml2 libexpat1 libxerces-c3.2 libnetcdf-c++4-1 netcdf-bin libpoppler134 libspatialite8 librasterlite2-1 gpsbabel \
-    libhdf4-0-alt libhdf5-103-1 libhdf5-cpp-103-1 poppler-utils libfreexl1 unixodbc mdbtools libwebp7 \
-    liblcms2-2 libpcre3 libcrypto++8 libfyba0 libkmlbase1 libkmlconvenience1 libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 \
-    libmysqlclient21 libogdi4.1 libcfitsio10 libzstd1 bash bash-completion libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
+    libxml2 libexpat1 libxerces-c3.2 libnetcdf-c++4-1 netcdf-bin libpoppler134 libspatialite8 \
+    librasterlite2-1 gpsbabel libhdf4-0-alt libhdf5-103-1 libhdf5-cpp-103-1 poppler-utils libfreexl1 \
+    unixodbc mdbtools libwebp7 liblcms2-2 libpcre3 libcrypto++8 libfyba0 libkmlbase1 libkmlconvenience1 \
+    libkmldom1 libkmlengine1 libkmlregionator1 libkmlxsd1 libmysqlclient21 libogdi4.1 libcfitsio10 \
+    libzstd1 bash bash-completion libpq5 libarmadillo12 libpython3.12 libopenexr-3-1-30 libheif1 \
     libdeflate0 libblosc1 liblz4-1 libbrotli1 libarchive13 libaec0 libavif16 libspdlog1.12 libmagic1t64 \
     libmuparser2v5 python-is-python3 python3-pil python3-numpy \
     openjdk-17-jre \
   # Worksround OGDI packaging bug for Ubuntu 24.04
   && ln -s /usr/lib/x86_64-linux-gnu/ogdi/4.1/libvrf.so /usr/lib/x86_64-linux-gnu \
   # Install Arrow C++
-  && wget -q https://apache.jfrog.io/artifactory/arrow/ubuntu/apache-arrow-apt-source-latest-jammy.deb \
+  && wget -q https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get install -y \
-    ./apache-arrow-apt-source-latest-jammy.deb \
+    ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb \
   && apt-get update -y && apt-get upgrade -y \
   && apt-get install -y \
     libarrow${ARROW_SOVERSION} \
@@ -240,7 +240,7 @@ RUN apt-get update -y && apt-get upgrade -y \
     libarrow-dataset${ARROW_SOVERSION} \
   && apt-get -y --purge autoremove \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* ./apache-arrow-apt-source-latest-jammy.deb
+  && rm -rf /var/lib/apt/lists/* ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Manually install ADBC packages from Ubuntu 22.04 as there are no 24.04 packages at time of writing
 RUN curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
