@@ -169,7 +169,9 @@ RUN wget -q https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short
     libparquet-dev \
     libarrow-acero-dev \
     libarrow-dataset-dev \
-  && rm -rf ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+  && apt-get -y --purge autoremove \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
 
 # Manually install ADBC packages from Ubuntu 22.04 as there are no 24.04 packages at time of writing
 RUN curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
