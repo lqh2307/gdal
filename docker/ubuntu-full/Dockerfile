@@ -32,7 +32,7 @@ RUN wget -q https://github.com/ubarsc/kealib/archive/kealib-${KEA_VERSION}.zip \
     -DHDF5_LIB_PATH=/usr/lib/x86_64-linux-gnu/hdf5/serial \
     -DLIBKEA_WITH_GDAL=OFF \
   && ninja \
-  && DESTDIR=/build_thirdparty ninja install \
+  && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && cd .. \
   && rm -rf kealib-kealib-${KEA_VERSION} kealib-${KEA_VERSION}.zip \
@@ -49,7 +49,7 @@ RUN wget -q https://github.com/mongodb/mongo-c-driver/releases/download/${MONGO_
     -DENABLE_TESTS=NO \
     -DCMAKE_BUILD_TYPE=Release \
   && ninja \
-  && DESTDIR=/build_thirdparty ninja install \
+  && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf mongo-c-driver-${MONGO_C_DRIVER_VERSION} mongo-c-driver-${MONGO_C_DRIVER_VERSION}.tar.gz /build_thirdparty/usr/lib/x86_64-linux-gnu/*.a \
@@ -69,7 +69,7 @@ RUN wget -q https://github.com/mongodb/mongo-cxx-driver/archive/r${MONGOCXX_VERS
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_VERSION=${MONGOCXX_VERSION} \
   && ninja \
-  && DESTDIR=/build_thirdparty ninja install \
+  && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf mongo-cxx-driver-r${MONGOCXX_VERSION} r${MONGOCXX_VERSION}.tar.gz \
@@ -96,7 +96,7 @@ RUN wget -q https://github.com/TileDB-Inc/TileDB/archive/${TILEDB_VERSION}.tar.g
     -DCOMPILER_SUPPORTS_AVX2=FALSE \
     -DOPENSSL_INCLUDE_DIR=/usr/include \
   && ninja \
-  && DESTDIR=/build_thirdparty ninja install \
+  && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf TileDB-${TILEDB_VERSION} ${TILEDB_VERSION}.tar.gz \
@@ -123,7 +123,7 @@ RUN git clone --recurse-submodules --single-branch -b master https://github.com/
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release \
   && ninja \
-  && DESTDIR=/build_thirdparty ninja install \
+  && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && cd ../../.. \
   && rm -rf QB3
@@ -146,7 +146,7 @@ RUN git clone --recurse-submodules --single-branch -b main https://github.com/li
     -DJPEGXL_ENABLE_TOOLS=OFF \
     -DJPEGXL_ENABLE_BENCHMARK=OFF .. \
   && ninja \
-  && DESTDIR=/build_thirdparty ninja install \
+  && DESTDIR="/build_thirdparty" ninja install \
   && ninja install \
   && cd ../.. \
   && rm -rf libjxl /lib/x86_64-linux-gnu/libjxl*.a /build_thirdparty/lib/x86_64-linux-gnu/libjxl*.a
