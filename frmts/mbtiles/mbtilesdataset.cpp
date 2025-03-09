@@ -3099,14 +3099,6 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
     if (pszTF)
         m_eTF = GDALGPKGMBTilesGetTileFormat(pszTF);
 
-    const char *pszVersion = CSLFetchNameValueDef(
-        papszOptions, "VERSION", (m_eTF == GPKG_TF_WEBP) ? "1.3" : "1.1");
-    pszSQL = sqlite3_mprintf(
-        "INSERT INTO metadata (name, value) VALUES ('version', '%q')",
-        pszVersion);
-    sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
-    sqlite3_free(pszSQL);
-
     const char *pszFormat = CSLFetchNameValueDef(
         papszOptions, "FORMAT", GDALMBTilesGetTileFormatName(m_eTF));
     pszSQL = sqlite3_mprintf(
