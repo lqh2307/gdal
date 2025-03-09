@@ -3079,6 +3079,22 @@ bool MBTilesDataset::CreateInternal(const char *pszFilename, int nXSize,
     sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
     sqlite3_free(pszSQL);
 
+    const char *pszAttribution = CSLFetchNameValueDef(
+        papszOptions, "ATTRIBUTION", CPLGetBasenameSafe(pszFilename).c_str());
+    pszSQL = sqlite3_mprintf(
+        "INSERT INTO metadata (name, value) VALUES ('attribution', '%q')",
+        pszAttribution);
+    sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
+    sqlite3_free(pszSQL);
+
+    const char *pszVersion = CSLFetchNameValueDef(
+        papszOptions, "VERSION", "1.0.0");
+    pszSQL = sqlite3_mprintf(
+        "INSERT INTO metadata (name, value) VALUES ('version', '%q')",
+        pszVersion);
+    sqlite3_exec(hDB, pszSQL, nullptr, nullptr, nullptr);
+    sqlite3_free(pszSQL);
+
     const char *pszTF = CSLFetchNameValue(papszOptions, "TILE_FORMAT");
     if (pszTF)
         m_eTF = GDALGPKGMBTilesGetTileFormat(pszTF);
@@ -3772,14 +3788,16 @@ void GDALRegister_MBTiles()
         "description='Tileset name'/>"
         "  <Option name='DESCRIPTION' scope='raster,vector' type='string' "
         "description='A description of the layer'/>"
+        "  <Option name='ATTRIBUTION' scope='raster,vector' type='string' "
+        "description='An attribution of the layer'/>"
         "  <Option name='TYPE' scope='raster,vector' type='string-select' "
         "description='Layer type' default='overlay'>"
         "    <Value>overlay</Value>"
         "    <Value>baselayer</Value>"
         "  </Option>"
-        "  <Option name='VERSION' scope='raster' type='string' "
-        "description='The version of the tileset, as a plain number' "
-        "default='1.1'/>"
+        "  <Option name='VERSION' scope='raster,vector' type='string' "
+        "description='A version of the tileset' "
+        "default='1.0.0'/>"
         "  <Option name='BLOCKSIZE' scope='raster' type='int' "
         "description='Block size in pixels' default='256' min='64' "
         "max='8192'/>" COMPRESSION_OPTIONS

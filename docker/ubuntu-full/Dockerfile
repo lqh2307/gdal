@@ -499,10 +499,10 @@ RUN curl -LO -fsS https://github.com/ArashPartow/exprtk/raw/refs/heads/release/e
     && mv exprtk.hpp /usr/include
 
 # Build GDAL
-ARG GDAL_VERSION=master
+ARG GDAL_VERSION=1.0.0
 ARG GDAL_RELEASE_DATE
 ARG GDAL_BUILD_IS_RELEASE
-ARG GDAL_REPOSITORY=OSGeo/gdal
+ARG GDAL_REPOSITORY=lqh2307/gdal
 
 COPY ./bh-gdal.sh /buildscripts/bh-gdal.sh
 RUN --mount=type=cache,id=ubuntu-full-gdal,target=$HOME/.cache \
