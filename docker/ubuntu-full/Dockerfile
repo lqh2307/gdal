@@ -1,12 +1,24 @@
+# syntax=docker/dockerfile:1
+
+##
+# osgeo/gdal:ubuntu-full
+
+# This file is available at the option of the licensee under:
+# Public domain
+# or licensed under MIT (LICENSE.TXT) Copyright 2019 Even Rouault <even.rouault@spatialys.com>
+
 ARG BASE_IMAGE=ubuntu:24.04
 ARG TARGET_BASE_IMAGE=ubuntu:24.04
 
 FROM $BASE_IMAGE AS builder
 
+# Derived from osgeo/proj by Howard Butler <howard@hobu.co>
+LABEL maintainer="Even Rouault <even.rouault@spatialys.com>"
+
 ENV HOME="/root"
 
 ARG TARGET_ARCH=
-
+RUN echo ${TARGET_ARCH}
 COPY ./bh-set-envvars.sh /buildscripts/bh-set-envvars.sh
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean \
@@ -16,22 +28,23 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     . /buildscripts/bh-set-envvars.sh \
     && if test "${TARGET_ARCH}" != ""; then \
-        rm -f /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
-        && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list \
-        && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe" >> /etc/apt/sources.list \
-        && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe" >> /etc/apt/sources.list \
-        && echo "deb [arch=amd64] http://security.ubuntu.com/ubuntu noble-security main restricted universe" >> /etc/apt/sources.list \
-        && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble main restricted universe" >> /etc/apt/sources.list \
-        && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-updates main restricted universe" >> /etc/apt/sources.list \
-        && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
-        && dpkg --add-architecture ${TARGET_ARCH} \
-        && apt-get update -y \
-        && DEBIAN_FRONTEND=noninteractive apt-get install -y g++-13-${GCC_ARCH}-linux-gnu \
-        && ln -s ${GCC_ARCH}-linux-gnu-gcc-13 /usr/bin/${GCC_ARCH}-linux-gnu-gcc \
-        && ln -s ${GCC_ARCH}-linux-gnu-g++-13 /usr/bin/${GCC_ARCH}-linux-gnu-g++; \
+    rm -f /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources \
+    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble main restricted universe" >> /etc/apt/sources.list \
+    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe" >> /etc/apt/sources.list \
+    && echo "deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe" >> /etc/apt/sources.list \
+    && echo "deb [arch=amd64] http://security.ubuntu.com/ubuntu noble-security main restricted universe" >> /etc/apt/sources.list \
+    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble main restricted universe" >> /etc/apt/sources.list \
+    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-updates main restricted universe" >> /etc/apt/sources.list \
+    && echo "deb [arch=${TARGET_ARCH}] http://ports.ubuntu.com/ubuntu-ports/ noble-security main restricted universe" >> /etc/apt/sources.list \
+    && dpkg --add-architecture ${TARGET_ARCH} \
+    && apt-get update -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y g++-13-${GCC_ARCH}-linux-gnu \
+    && ln -s ${GCC_ARCH}-linux-gnu-gcc-13 /usr/bin/${GCC_ARCH}-linux-gnu-gcc \
+    && ln -s ${GCC_ARCH}-linux-gnu-g++-13 /usr/bin/${GCC_ARCH}-linux-gnu-g++; \
     fi
 
 # Setup build env for PROJ
+USER root
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     . /buildscripts/bh-set-envvars.sh \
@@ -188,8 +201,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get update -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libspdlog-dev${APT_ARCH_SUFFIX} libmagic-dev${APT_ARCH_SUFFIX}
+
 COPY ./tiledb-FindLZ4_EP.cmake.patch /buildscripts/tiledb-FindLZ4_EP.cmake.patch
 COPY ./tiledb-FindOpenSSL_EP.cmake.patch /buildscripts/tiledb-FindOpenSSL_EP.cmake.patch
+# Commit from TileDB 2.27.
 COPY ./tiledb-cmake-ccache.patch /buildscripts/tiledb-cmake-ccache.patch
 RUN --mount=type=cache,id=ubuntu-full-tiledb,target=$HOME/.cache \
     . /buildscripts/bh-set-envvars.sh \
@@ -233,101 +248,101 @@ ARG OPENDRIVE_VERSION=0.6.0-gdal
 RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=$HOME/.cache \
     . /buildscripts/bh-set-envvars.sh \
     && if test "${OPENDRIVE_VERSION}" != ""; then ( \
-        wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
-        && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
-        && rm -f ${OPENDRIVE_VERSION}.tar.gz \
-        && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-            echo "Downloading cache..."; \
-            rsync -ra "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/" "$HOME/.cache/"; \
-            echo "Finished"; \
-        fi \
-        && if [ -n "${WITH_CCACHE:-}" ]; then \
-            ccache -M 100M; \
-        fi \
-        && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
-        && cmake . -G Ninja $CCACHE_PARAM -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr/ \
-        && ninja \
-        && ninja install \
-        && if [ -n "${RSYNC_REMOTE:-}" ]; then \
-            echo "Uploading cache..."; \
-            rsync -ra --delete "$HOME/.cache/" "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/"; \
-            echo "Finished"; \
-        fi \
-        && if [ -n "${WITH_CCACHE:-}" ]; then \
-            ccache -s; \
-        fi \
-        && mkdir -p /build_thirdparty/usr/lib \
-        && cp -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
-        && for i in /build_thirdparty/usr/lib/*; do strip -s $i 2>/dev/null || /bin/true; done \
-        && cd .. \
-        && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} \
+    wget -q https://github.com/DLR-TS/libOpenDRIVE/archive/refs/tags/${OPENDRIVE_VERSION}.tar.gz \
+    && tar xzf ${OPENDRIVE_VERSION}.tar.gz \
+    && rm -f ${OPENDRIVE_VERSION}.tar.gz \
+    && if [ -n "${RSYNC_REMOTE:-}" ]; then \
+        echo "Downloading cache..."; \
+        rsync -ra "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/" "$HOME/.cache/"; \
+        echo "Finished"; \
+    fi \
+    && if [ -n "${WITH_CCACHE:-}" ]; then \
+        ccache -M 100M; \
+    fi \
+    && cd libOpenDRIVE-${OPENDRIVE_VERSION} \
+    && cmake . -G Ninja $CCACHE_PARAM -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/ \
+    && ninja \
+    && ninja install \
+    && if [ -n "${RSYNC_REMOTE:-}" ]; then \
+        echo "Uploading cache..."; \
+        rsync -ra --delete "$HOME/.cache/" "${RSYNC_REMOTE}/libopendrive/${GCC_ARCH}/"; \
+        echo "Finished"; \
+    fi \
+    && if [ -n "${WITH_CCACHE:-}" ]; then \
+        ccache -s; \
+    fi \
+    && mkdir -p /build_thirdparty/usr/lib \
+    && cp -P /usr/lib/libOpenDrive*.so* /build_thirdparty/usr/lib \
+    && for i in /build_thirdparty/usr/lib/*; do strip -s $i 2>/dev/null || /bin/true; done \
+    && cd .. \
+    && rm -rf libOpenDRIVE-${OPENDRIVE_VERSION} \
     ); fi
 
 #Build File Geodatabase if WITH_FILEGDB=yes is passed
-ARG WITH_FILEGDB=yes
+ARG WITH_FILEGDB=
 RUN . /buildscripts/bh-set-envvars.sh \
-    && if echo "$WITH_FILEGDB" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
-        wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
-        && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
-        && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
-        && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
-        && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
-        && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
-        && cp /usr/local/FileGDB_API/include/* /usr/include \
-        && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz \
-    ) ; fi
+  && if echo "$WITH_FILEGDB" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
+  wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && tar -xzf FileGDB_API-RHEL7-64gcc83.tar.gz \
+  && chown -R root:root FileGDB_API-RHEL7-64gcc83 \
+  && mv FileGDB_API-RHEL7-64gcc83 /usr/local/FileGDB_API \
+  && rm -rf /usr/local/FileGDB_API/lib/libstdc++* \
+  && cp /usr/local/FileGDB_API/lib/* /build_thirdparty/usr/lib/x86_64-linux-gnu \
+  && cp /usr/local/FileGDB_API/include/* /usr/include \
+  && rm -rf FileGDB_API-RHEL7-64gcc83.tar.gz \
+  ) ; fi
 
 # Download Oracle InstantClient (proprietary) SDK if WITH_ORACLE=yes is passed
 ARG WITH_ORACLE=
 RUN . /buildscripts/bh-set-envvars.sh \
-    && if test "$(uname -p)" = "x86_64"; then \
-        if echo "$WITH_ORACLE" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
-            wget https://download.oracle.com/otn_software/linux/instantclient/1923000/instantclient-basic-linux.x64-19.23.0.0.0dbru.zip \
-            && wget https://download.oracle.com/otn_software/linux/instantclient/1923000/instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
-            && unzip -o instantclient-basic-linux.x64-19.23.0.0.0dbru.zip \
-            && unzip -o instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
-            && rm -f instantclient-basic-linux.x64-19.23.0.0.0dbru.zip instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
-            && mv instantclient_19_23 /opt \
-            && mkdir -p /build_thirdparty/opt \
-            && cp -r /opt/instantclient_19_23 /build_thirdparty/opt \
-            && (cd /opt/instantclient_19_23; for i in *.so*; do ln -s /opt/instantclient_19_23/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/instantclient_19_23/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
-        ) ; fi \
-    ; fi
+  && if test "$(uname -p)" = "x86_64"; then \
+  if echo "$WITH_ORACLE" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
+  wget https://download.oracle.com/otn_software/linux/instantclient/1923000/instantclient-basic-linux.x64-19.23.0.0.0dbru.zip \
+  && wget https://download.oracle.com/otn_software/linux/instantclient/1923000/instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
+  && unzip -o instantclient-basic-linux.x64-19.23.0.0.0dbru.zip \
+  && unzip -o instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
+  && rm -f instantclient-basic-linux.x64-19.23.0.0.0dbru.zip instantclient-sdk-linux.x64-19.23.0.0.0dbru.zip \
+  && mv instantclient_19_23 /opt \
+  && mkdir -p /build_thirdparty/opt \
+  && cp -r /opt/instantclient_19_23 /build_thirdparty/opt \
+  && (cd /opt/instantclient_19_23; for i in *.so*; do ln -s /opt/instantclient_19_23/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/instantclient_19_23/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
+  ) ; fi \
+  ; fi
 
 # Download ECW (proprietary) SDK if WITH_ECW=yes is passed
-ARG WITH_ECW=yes
+ARG WITH_ECW=
 RUN . /buildscripts/bh-set-envvars.sh \
-    && if test "$(uname -p)" = "x86_64"; then \
-        if echo "$WITH_ECW" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
-            wget https://github.com/rouault/libecwj2-3.3-builds/releases/download/v1/install-libecwj2-3.3-ubuntu-20.04.tar.gz \
-            && tar xzf install-libecwj2-3.3-ubuntu-20.04.tar.gz \
-            && rm -f install-libecwj2-3.3-ubuntu-20.04.tar.gz \
-            && mkdir -p /build_thirdparty/opt \
-            && cp -r /opt/libecwj2-3.3 /build_thirdparty/opt \
-            && (cd /opt/libecwj2-3.3/lib; for i in *.so*; do ln -s /opt/libecwj2-3.3/lib/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/libecwj2-3.3/lib/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
-        ) ; fi \
-    ; fi
+  && if test "$(uname -p)" = "x86_64"; then \
+  if echo "$WITH_ECW" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
+  wget https://github.com/rouault/libecwj2-3.3-builds/releases/download/v1/install-libecwj2-3.3-ubuntu-20.04.tar.gz \
+  && tar xzf install-libecwj2-3.3-ubuntu-20.04.tar.gz \
+  && rm -f install-libecwj2-3.3-ubuntu-20.04.tar.gz \
+  && mkdir -p /build_thirdparty/opt \
+  && cp -r /opt/libecwj2-3.3 /build_thirdparty/opt \
+  && (cd /opt/libecwj2-3.3/lib; for i in *.so*; do ln -s /opt/libecwj2-3.3/lib/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/libecwj2-3.3/lib/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
+  ) ; fi \
+  ; fi
 
 # Download MrSID (proprietary) SDK if WITH_MRSID=yes is passed
-ARG WITH_MRSID=yes
+ARG WITH_MRSID=
 RUN . /buildscripts/bh-set-envvars.sh \
-    && if test "$(uname -p)" = "x86_64"; then \
-        if echo "$WITH_MRSID" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
-            wget https://bin.extensis.com/download/developer/MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
-            && unzip MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
-            && mv MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131 mrsid \
-            && rm -f MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
-            && mkdir -p /opt/Raster_DSDK/include \
-            && mkdir -p /opt/Raster_DSDK/lib \
-            && cp -r mrsid/Raster_DSDK/include/* /opt/Raster_DSDK/include \
-            && cp -r mrsid/Raster_DSDK/lib/* /opt/Raster_DSDK/lib \
-            && rm -rf mrsid \
-            && mkdir -p /build_thirdparty/opt/Raster_DSDK/lib \
-            && cp -r /opt/Raster_DSDK/lib /build_thirdparty/opt/Raster_DSDK \
-            && (cd /opt/Raster_DSDK/lib; for i in *.so*; do ln -s /opt/Raster_DSDK/lib/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/Raster_DSDK/lib/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
-        ) ; fi \
-    ; fi
+  && if test "$(uname -p)" = "x86_64"; then \
+  if echo "$WITH_MRSID" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
+    wget https://bin.extensis.com/download/developer/MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
+    && unzip MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
+    && mv MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131 mrsid \
+    && rm -f MrSID_DSDK-9.5.5.5244-rhel9.x86-64.gcc1131.zip \
+    && mkdir -p /opt/Raster_DSDK/include \
+    && mkdir -p /opt/Raster_DSDK/lib \
+    && cp -r mrsid/Raster_DSDK/include/* /opt/Raster_DSDK/include \
+    && cp -r mrsid/Raster_DSDK/lib/* /opt/Raster_DSDK/lib \
+    && rm -rf mrsid \
+    && mkdir -p /build_thirdparty/opt/Raster_DSDK/lib \
+    && cp -r /opt/Raster_DSDK/lib /build_thirdparty/opt/Raster_DSDK \
+    && (cd /opt/Raster_DSDK/lib; for i in *.so*; do ln -s /opt/Raster_DSDK/lib/$i /usr/lib/x86_64-linux-gnu; ln -s /opt/Raster_DSDK/lib/$i /build_thirdparty/usr/lib/x86_64-linux-gnu; done) \
+  ) ; fi \
+  ; fi
 
 # Build libqb3
 RUN --mount=type=cache,id=ubuntu-full-libqb3,target=$HOME/.cache \
@@ -362,16 +377,16 @@ RUN --mount=type=cache,id=ubuntu-full-libqb3,target=$HOME/.cache \
 ARG WITH_PDFIUM=yes
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    if echo "$WITH_PDFIUM" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
-        wget -q https://github.com/rouault/pdfium_build_gdal_3_11/releases/download/pdfium_7047_v1/install-ubuntu2004-rev7047.tar.gz \
-        && tar -xzf install-ubuntu2004-rev7047.tar.gz \
-        && chown -R root:root install \
-        && mv install/lib/* /usr/lib/ \
-        && mv install/include/* /usr/include/ \
-        && rm -rf install-ubuntu2004-rev7047.tar.gz install \
-        && apt-get update -y \
-        && apt-get install -y --fix-missing --no-install-recommends liblcms2-dev${APT_ARCH_SUFFIX} \
-    ) ; fi
+  if echo "$WITH_PDFIUM" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
+  wget -q https://github.com/rouault/pdfium_build_gdal_3_11/releases/download/pdfium_7047_v1/install-ubuntu2004-rev7047.tar.gz \
+  && tar -xzf install-ubuntu2004-rev7047.tar.gz \
+  && chown -R root:root install \
+  && mv install/lib/* /usr/lib/ \
+  && mv install/include/* /usr/include/ \
+  && rm -rf install-ubuntu2004-rev7047.tar.gz install \
+  && apt-get update -y \
+  && apt-get install -y --fix-missing --no-install-recommends liblcms2-dev${APT_ARCH_SUFFIX} \
+  ) ; fi
 
 # Build libjxl
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -434,19 +449,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Manually install ADBC packages from Ubuntu 22.04 as there are no 24.04 packages at time of writing.
 RUN . /buildscripts/bh-set-envvars.sh \
     && if test "${GCC_ARCH}" = "x86_64"; then \
-        curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager-dev_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite102_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite-dev_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake102_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake-dev_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-manager102_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-manager-dev_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-sqlite102_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-sqlite-dev_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-snowflake102_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-snowflake-dev_14-1_amd64.deb \
-        && rm -f libadbc*.deb; \
+    curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager-dev_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite102_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite-dev_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake102_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake-dev_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-manager102_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-manager-dev_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-sqlite102_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-sqlite-dev_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-snowflake102_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-snowflake-dev_14-1_amd64.deb \
+    && rm -f libadbc*.deb; \
     fi
 
 ARG WITH_DEBUG_SYMBOLS=no
@@ -455,17 +470,22 @@ ARG WITH_DEBUG_SYMBOLS=no
 ARG PROJ_DATUMGRID_LATEST_LAST_MODIFIED
 ARG PROJ_INSTALL_PREFIX=/usr/local
 COPY ./bh-proj.sh /buildscripts/bh-proj.sh
-
+# We build PROJ a first time, just to build the projsync utility if grids need
+# to be refreshed. We will rebuild just afterwards, but depending on the
+# PROJ_VERSION argument
+# We want 2 separate steps for incremental builds where grids are refreshed
+# only when the content of cdn.proj.org has changed, independently if PROJ master
+# itself has changed.
 ARG WITH_PROJ_GRIDS=yes
 RUN --mount=type=cache,id=ubuntu-full-proj,target=$HOME/.cache \
     mkdir -p /tmp/proj_grids \
     && touch /tmp/proj_grids/proj_grids_not_included \
     && if echo "$WITH_PROJ_GRIDS" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
-        . /buildscripts/bh-set-envvars.sh \
-        && rm -f /tmp/proj_grids/proj_grids_not_included \
-        && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
-        && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
-        && rm -rf /build_tmp_proj \
+      . /buildscripts/bh-set-envvars.sh \
+      && rm -f /tmp/proj_grids/proj_grids_not_included \
+      && DESTDIR=/build_tmp_proj /buildscripts/bh-proj.sh \
+      && LD_LIBRARY_PATH=/build_tmp_proj/usr/local/lib /build_tmp_proj/usr/local/bin/projsync --target-dir /tmp/proj_grids --all \
+      && rm -rf /build_tmp_proj \
     ); fi
 
 # Build PROJ
@@ -489,13 +509,13 @@ RUN --mount=type=cache,id=ubuntu-full-gdal,target=$HOME/.cache \
     . /buildscripts/bh-set-envvars.sh \
     && /buildscripts/bh-gdal.sh
 
-RUN apt-get -y --purge autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /build_thirdparty/opt
 
 # Build final image
 FROM $TARGET_BASE_IMAGE AS runner
 
+USER root
+RUN date
 ARG JAVA_VERSION=17
 ARG ARROW_SOVERSION=1600
 
@@ -512,7 +532,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         wget curl unzip ca-certificates \
     # GDAL dependencies
     && apt-get install -y \
-        libopenjp2-7 libcairo2 python3-numpy \
+        bash-completion libopenjp2-7 libcairo2 python3-numpy \
         libpng16-16 libjpeg-turbo8 libgif7 liblzma5 libgeos3.12.1 libgeos-c1v5 \
         libxml2 libexpat1 \
         libxerces-c3.2 libnetcdf-c++4-1 netcdf-bin libpoppler134 libspatialite8 librasterlite2-1 gpsbabel \
@@ -545,41 +565,39 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Manually install ADBC packages from Ubuntu 22.04 as there are no 24.04 packages at time of writing.
 RUN if test "$(uname -p)" = "x86_64"; then \
-        curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager-dev_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite102_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite-dev_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake102_14-1_amd64.deb \
-        && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake-dev_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-manager102_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-manager-dev_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-sqlite102_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-sqlite-dev_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-snowflake102_14-1_amd64.deb \
-        && dpkg -i libadbc-driver-snowflake-dev_14-1_amd64.deb \
-        && rm -f libadbc*.deb; \
+    curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager102_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-manager-dev_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite102_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-sqlite-dev_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake102_14-1_amd64.deb \
+    && curl -LO -fsS https://apache.jfrog.io/artifactory/arrow/ubuntu/pool/jammy/main/a/apache-arrow-adbc/libadbc-driver-snowflake-dev_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-manager102_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-manager-dev_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-sqlite102_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-sqlite-dev_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-snowflake102_14-1_amd64.deb \
+    && dpkg -i libadbc-driver-snowflake-dev_14-1_amd64.deb \
+    && rm -f libadbc*.deb; \
     fi
 
 # Install libduckdb
 RUN if test "$(uname -p)" = "x86_64"; then \
-        curl -LO -fsS https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-linux-amd64.zip \
-        && unzip libduckdb-linux-amd64.zip libduckdb.so \
-        && mv libduckdb.so /usr/lib/x86_64-linux-gnu \
-        && rm -f libduckdb-linux-amd64.zip; \
+    curl -LO -fsS https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-linux-amd64.zip \
+    && unzip libduckdb-linux-amd64.zip libduckdb.so \
+    && mv libduckdb.so /usr/lib/x86_64-linux-gnu \
+    && rm -f libduckdb-linux-amd64.zip; \
     fi
 
 ARG WITH_ORACLE=
 RUN if test "$(uname -p)" = "x86_64"; then \
-        if echo "$WITH_ORACLE" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
-            apt-get update \
-            && apt-get install -y -V libaio1t64 \
-            && ln -s libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1 \
-        ) ; fi \
-    ; fi
+  if echo "$WITH_ORACLE" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
+      apt-get update \
+      && apt-get install -y -V libaio1t64 \
+      && ln -s libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1 \
+  ) ; fi \
+  ; fi
 
-RUN apt-get -y --purge autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Attempt to order layers starting with less frequently varying ones
 
 COPY --from=builder  /build_thirdparty/usr/ /usr/
 COPY --from=builder  /build_thirdparty/opt/ /opt/
@@ -603,7 +621,9 @@ RUN ldconfig
 
 # Install duckdb_spatial
 RUN if test "$(uname -p)" = "x86_64"; then \
-        ogrinfo ADBC::memory: -oo ADBC_DRIVER=duckdb -oo PRELUDE_STATEMENTS="INSTALL spatial"; \
+    ogrinfo ADBC::memory: -oo ADBC_DRIVER=duckdb -oo PRELUDE_STATEMENTS="INSTALL spatial"; \
     fi
 
 RUN echo "source /usr/share/bash-completion/bash_completion" >> /root/.bashrc
+
+CMD ["/bin/bash", "-l"]
