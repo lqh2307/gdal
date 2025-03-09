@@ -280,7 +280,7 @@ RUN --mount=type=cache,id=ubuntu-full-libopendrive,target=$HOME/.cache \
     ); fi
 
 #Build File Geodatabase if WITH_FILEGDB=yes is passed
-ARG WITH_FILEGDB=
+ARG WITH_FILEGDB=yes
 RUN . /buildscripts/bh-set-envvars.sh \
   && if echo "$WITH_FILEGDB" | grep -Eiq "^(y(es)?|1|true)$"  ; then ( \
   wget -q https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5.2/FileGDB_API-RHEL7-64gcc83.tar.gz \
@@ -311,7 +311,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
   ; fi
 
 # Download ECW (proprietary) SDK if WITH_ECW=yes is passed
-ARG WITH_ECW=
+ARG WITH_ECW=yes
 RUN . /buildscripts/bh-set-envvars.sh \
   && if test "$(uname -p)" = "x86_64"; then \
   if echo "$WITH_ECW" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
@@ -325,7 +325,7 @@ RUN . /buildscripts/bh-set-envvars.sh \
   ; fi
 
 # Download MrSID (proprietary) SDK if WITH_MRSID=yes is passed
-ARG WITH_MRSID=
+ARG WITH_MRSID=yes
 RUN . /buildscripts/bh-set-envvars.sh \
   && if test "$(uname -p)" = "x86_64"; then \
   if echo "$WITH_MRSID" | grep -Eiq "^(y(es)?|1|true)$" ; then ( \
