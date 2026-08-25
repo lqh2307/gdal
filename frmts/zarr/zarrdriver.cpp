@@ -142,6 +142,57 @@ CSLConstList ZarrDataset::GetMetadata(const char *pszDomain)
 }
 
 /************************************************************************/
+/*                          IBuildOverviews()                           */
+/************************************************************************/
+
+CPLErr ZarrDataset::IBuildOverviews(const char *pszResampling, int nOverviews,
+                                    const int *panOverviewList,
+                                    int /* nListBands */,
+                                    const int * /*panBandList*/,
+                                    GDALProgressFunc pfnProgress,
+                                    void *pProgressData,
+                                    CSLConstList papszOptions)
+{
+    for (int i = 0; i < nBands; ++i)
+    {
+        auto poBand = cpl::down_cast<ZarrRasterBand *>(papoBands[i]);
+        for (auto &[_, value] : poBand->m_oMapOverview)
+        {
+            poBand->m_aoOverviewOld.push_back(std::move(value));
+        }
+        poBand->m_oMapOverview.clear();
+    }
+
+    if (m_poSingleArray)
+    {
+        return m_poSingleArray->BuildOverviews(pszResampling, nOverviews,
+                                               panOverviewList, pfnProgress,
+                                               pProgressData, papszOptions);
+    }
+    else
+    {
+        CPLErr eErr = CE_None;
+        for (int i = 0; i < nBands && eErr == CE_None; ++i)
+        {
+            std::unique_ptr<void, decltype(&GDALDestroyScaledProgress)>
+                pScaledProgress(
+                    GDALCreateScaledProgress(static_cast<double>(i) /
+                                                 static_cast<double>(nBands),
+                                             static_cast<double>(i + 1) /
+                                                 static_cast<double>(nBands),
+                                             pfnProgress, pProgressData),
+                    GDALDestroyScaledProgress);
+            eErr = cpl::down_cast<ZarrRasterBand *>(papoBands[i])
+                       ->m_poArray->BuildOverviews(
+                           pszResampling, nOverviews, panOverviewList,
+                           pScaledProgress ? GDALScaledProgress : nullptr,
+                           pScaledProgress.get(), papszOptions);
+        }
+        return eErr;
+    }
+}
+
+/************************************************************************/
 /*                       GetXYDimensionIndices()                        */
 /************************************************************************/
 
@@ -1468,10 +1519,11 @@ GDALDataset *ZarrDataset::Create(const char *pszName, int nXSize, int nYSize,
         }
         for (int i = 0; i < nBandsIn; i++)
         {
-            auto poSlicedArray = poDS->m_poSingleArray->GetView(
-                CPLSPrintf(bBandInterleave ? "[%d,::,::]" : "[::,::,%d]", i));
-            poDS->SetBand(i + 1,
-                          std::make_unique<ZarrRasterBand>(poSlicedArray));
+            const std::string viewDef =
+                CPLSPrintf(bBandInterleave ? "[%d,::,::]" : "[::,::,%d]", i);
+            auto poSlicedArray = poDS->m_poSingleArray->GetView(viewDef);
+            poDS->SetBand(i + 1, std::make_unique<ZarrRasterBand>(poSlicedArray,
+                                                                  viewDef));
         }
     }
     else
@@ -1524,15 +1576,17 @@ CPLErr ZarrDataset::FlushCache(bool bAtClosing)
         auto poFirstBand = cpl::down_cast<ZarrRasterBand *>(papoBands[0]);
         if (poFirstBand->m_dfNoData.has_value())
         {
+            const double dfFirstBandNoData =
+                poFirstBand->m_dfNoData.value_or(0);
             bool bSameValue = true;
             for (int i = 1; bSameValue && i < nBands; ++i)
             {
                 auto poBand = cpl::down_cast<ZarrRasterBand *>(papoBands[i]);
-                bSameValue = poBand->m_dfNoData.has_value() &&
-                             ((std::isnan(poFirstBand->m_dfNoData.value()) &&
-                               std::isnan(poBand->m_dfNoData.value())) ||
-                              (poFirstBand->m_dfNoData.value() ==
-                               poBand->m_dfNoData.value()));
+                const double dfNoData = poBand->m_dfNoData.value_or(0);
+                bSameValue =
+                    poBand->m_dfNoData.has_value() &&
+                    ((std::isnan(dfFirstBandNoData) && std::isnan(dfNoData)) ||
+                     (dfFirstBandNoData == dfNoData));
             }
             if (!bSameValue)
             {
@@ -1544,19 +1598,20 @@ CPLErr ZarrDataset::FlushCache(bool bAtClosing)
             }
             else
             {
-                m_poSingleArray->SetNoDataValue(
-                    poFirstBand->m_dfNoData.value());
+                m_poSingleArray->SetNoDataValue(dfFirstBandNoData);
             }
         }
         else if (poFirstBand->m_nNoDataInt64.has_value())
         {
+            const auto nFirstBandNoData =
+                poFirstBand->m_nNoDataInt64.value_or(0);
             bool bSameValue = true;
             for (int i = 1; bSameValue && i < nBands; ++i)
             {
                 auto poBand = cpl::down_cast<ZarrRasterBand *>(papoBands[i]);
-                bSameValue = poBand->m_nNoDataInt64.has_value() &&
-                             poFirstBand->m_nNoDataInt64.value() ==
-                                 poBand->m_nNoDataInt64.value();
+                bSameValue =
+                    poBand->m_nNoDataInt64.has_value() &&
+                    nFirstBandNoData == poBand->m_nNoDataInt64.value_or(0);
             }
             if (!bSameValue)
             {
@@ -1568,19 +1623,20 @@ CPLErr ZarrDataset::FlushCache(bool bAtClosing)
             }
             else
             {
-                m_poSingleArray->SetNoDataValue(
-                    poFirstBand->m_nNoDataInt64.value());
+                m_poSingleArray->SetNoDataValue(nFirstBandNoData);
             }
         }
         else if (poFirstBand->m_nNoDataUInt64.has_value())
         {
+            const auto nFirstBandNoData =
+                poFirstBand->m_nNoDataUInt64.value_or(0);
             bool bSameValue = true;
             for (int i = 1; bSameValue && i < nBands; ++i)
             {
                 auto poBand = cpl::down_cast<ZarrRasterBand *>(papoBands[i]);
-                bSameValue = poBand->m_nNoDataUInt64.has_value() &&
-                             poFirstBand->m_nNoDataUInt64.value() ==
-                                 poBand->m_nNoDataUInt64.value();
+                bSameValue =
+                    poBand->m_nNoDataUInt64.has_value() &&
+                    nFirstBandNoData == poBand->m_nNoDataUInt64.value_or(0);
             }
             if (!bSameValue)
             {
@@ -1592,20 +1648,21 @@ CPLErr ZarrDataset::FlushCache(bool bAtClosing)
             }
             else
             {
-                m_poSingleArray->SetNoDataValue(
-                    poFirstBand->m_nNoDataUInt64.value());
+                m_poSingleArray->SetNoDataValue(nFirstBandNoData);
             }
         }
 
         if (poFirstBand->m_dfOffset.has_value())
         {
+            const double dfOffsetFirstBand =
+                poFirstBand->m_dfOffset.value_or(0);
             bool bSameValue = true;
             for (int i = 1; bSameValue && i < nBands; ++i)
             {
                 auto poBand = cpl::down_cast<ZarrRasterBand *>(papoBands[i]);
-                bSameValue = poBand->m_dfOffset.has_value() &&
-                             poFirstBand->m_dfOffset.value() ==
-                                 poBand->m_dfOffset.value();
+                bSameValue =
+                    poBand->m_dfOffset.has_value() &&
+                    dfOffsetFirstBand == poBand->m_dfOffset.value_or(0);
             }
             if (!bSameValue)
             {
@@ -1617,19 +1674,19 @@ CPLErr ZarrDataset::FlushCache(bool bAtClosing)
             }
             else
             {
-                m_poSingleArray->SetOffset(poFirstBand->m_dfOffset.value());
+                m_poSingleArray->SetOffset(dfOffsetFirstBand);
             }
         }
 
         if (poFirstBand->m_dfScale.has_value())
         {
+            const double dfScaleFirstBand = poFirstBand->m_dfScale.value_or(0);
             bool bSameValue = true;
             for (int i = 1; bSameValue && i < nBands; ++i)
             {
                 auto poBand = cpl::down_cast<ZarrRasterBand *>(papoBands[i]);
-                bSameValue =
-                    poBand->m_dfScale.has_value() &&
-                    poFirstBand->m_dfScale.value() == poBand->m_dfScale.value();
+                bSameValue = poBand->m_dfScale.has_value() &&
+                             dfScaleFirstBand == poBand->m_dfScale.value_or(0);
             }
             if (!bSameValue)
             {
@@ -1641,7 +1698,7 @@ CPLErr ZarrDataset::FlushCache(bool bAtClosing)
             }
             else
             {
-                m_poSingleArray->SetScale(poFirstBand->m_dfScale.value());
+                m_poSingleArray->SetScale(dfScaleFirstBand);
             }
         }
 
@@ -1931,11 +1988,14 @@ CPLErr ZarrDataset::SetMetadata(CSLConstList papszMetadata,
 /*                   ZarrRasterBand::ZarrRasterBand()                   */
 /************************************************************************/
 
-ZarrRasterBand::ZarrRasterBand(const std::shared_ptr<GDALMDArray> &poArray)
-    : m_poArray(poArray)
+ZarrRasterBand::ZarrRasterBand(const std::shared_ptr<GDALMDArray> &poArray,
+                               const std::string &viewDef)
+    : m_poArray(poArray), m_osViewDef(viewDef)
 {
     assert(poArray->GetDimensionCount() == 2);
     eDataType = poArray->GetDataType().GetNumericDataType();
+    nRasterXSize = static_cast<int>(poArray->GetDimensions()[1]->GetSize());
+    nRasterYSize = static_cast<int>(poArray->GetDimensions()[0]->GetSize());
     nBlockXSize = static_cast<int>(poArray->GetBlockSize()[1]);
     nBlockYSize = static_cast<int>(poArray->GetBlockSize()[0]);
 }
@@ -2168,6 +2228,52 @@ CPLErr ZarrRasterBand::SetColorInterpretation(GDALColorInterp eColorInterp)
         }
     }
     return CE_None;
+}
+
+/************************************************************************/
+/*                          GetOverviewCount()                          */
+/************************************************************************/
+
+int ZarrRasterBand::GetOverviewCount()
+{
+    auto poGDS = cpl::down_cast<ZarrDataset *>(poDS);
+    if (poGDS->m_poSingleArray)
+        return poGDS->m_poSingleArray->GetOverviewCount();
+    return m_poArray->GetOverviewCount();
+}
+
+/************************************************************************/
+/*                            GetOverview()                             */
+/************************************************************************/
+
+GDALRasterBand *ZarrRasterBand::GetOverview(int idx)
+{
+    auto oIter = m_oMapOverview.find(idx);
+    if (oIter != m_oMapOverview.end())
+        return oIter->second.get();
+    auto poGDS = cpl::down_cast<ZarrDataset *>(poDS);
+    if (poGDS->m_poSingleArray)
+    {
+        auto ovrArray = poGDS->m_poSingleArray->GetOverview(idx);
+        if (!ovrArray)
+            return nullptr;
+        auto ovrArrayView = ovrArray->GetView(m_osViewDef);
+        if (!ovrArrayView)
+            return nullptr;  // not supposed to happen
+        return m_oMapOverview
+            .insert({idx, std::make_unique<ZarrRasterBand>(ovrArrayView,
+                                                           m_osViewDef)})
+            .first->second.get();
+    }
+    else
+    {
+        auto ovrArray = m_poArray->GetOverview(idx);
+        if (!ovrArray)
+            return nullptr;  // not supposed to happen
+        return m_oMapOverview
+            .insert({idx, std::make_unique<ZarrRasterBand>(ovrArray)})
+            .first->second.get();
+    }
 }
 
 /************************************************************************/
