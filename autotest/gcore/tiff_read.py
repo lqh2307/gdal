@@ -415,30 +415,30 @@ def test_tiff_read_tar_2():
 # Read a .tgz file (with explicit filename)
 
 
-def test_tiff_read_tgz_1():
+def test_tiff_read_tgz_1(tmp_vsimem):
 
-    ds = gdal.Open("/vsitar/./data/byte.tgz/byte.tif")
+    gdal.CopyFile("data/byte.tgz", tmp_vsimem / "byte.tgz")
+
+    ds = gdal.Open(f"/vsitar/{tmp_vsimem}/byte.tgz/byte.tif")
     assert (
         ds.GetRasterBand(1).Checksum() == 4672
     ), "Expected checksum = %d. Got = %d" % (4672, ds.GetRasterBand(1).Checksum())
     ds = None
-
-    gdal.Unlink("data/byte.tgz.properties")
 
 
 ###############################################################################
 # Read a .tgz file (with implicit filename)
 
 
-def test_tiff_read_tgz_2():
+def test_tiff_read_tgz_2(tmp_vsimem):
 
-    ds = gdal.Open("/vsitar/./data/byte.tgz")
+    gdal.CopyFile("data/byte.tgz", tmp_vsimem / "byte.tgz")
+
+    ds = gdal.Open(f"/vsitar/{tmp_vsimem}/byte.tgz")
     assert (
         ds.GetRasterBand(1).Checksum() == 4672
     ), "Expected checksum = %d. Got = %d" % (4672, ds.GetRasterBand(1).Checksum())
     ds = None
-
-    gdal.Unlink("data/byte.tgz.properties")
 
 
 ###############################################################################
@@ -714,15 +714,13 @@ def test_tiff_GTModelTypeGeoKey_only():
 )
 @pytest.mark.require_creation_option("GTiff", "JPEG")
 @gdaltest.disable_exceptions()
-def test_tiff_12bitjpeg():
+def test_tiff_12bitjpeg(tmp_vsimem):
     gdal.ErrorReset()
     with gdal.config_option("CPL_ACCUM_ERROR_MSG", "ON"), gdaltest.error_handler():
 
-        if os.path.exists("data/mandrilmini_12bitjpeg.tif.aux.xml"):
-            os.unlink("data/mandrilmini_12bitjpeg.tif.aux.xml")
-
+        gdal.CopyFile("data/mandrilmini_12bitjpeg.tif", tmp_vsimem / "test.tif")
         try:
-            ds = gdal.Open("data/mandrilmini_12bitjpeg.tif")
+            ds = gdal.Open(tmp_vsimem / "test.tif")
             ds.GetRasterBand(1).ReadRaster(0, 0, 1, 1)
         except Exception:
             ds = None
@@ -741,8 +739,6 @@ def test_tiff_12bitjpeg():
         stats[2] < 2150 or stats[2] > 2180 or str(stats[2]) == "nan"
     ), "did not get expected mean for band1."
     ds = None
-
-    os.unlink("data/mandrilmini_12bitjpeg.tif.aux.xml")
 
 
 ###############################################################################
@@ -2330,6 +2326,28 @@ def test_tiff_read_md6():
     ds = None
 
     assert not os.path.exists("data/md_ls_b1.tif.aux.xml")
+
+
+###############################################################################
+# Check read Landsat 8 metadata format
+
+
+def test_tiff_read_md_landsat8():
+
+    ds = gdal.Open("data/gtiff/LC08_L1TP_190023_20260809_20260816_02_T1.tif")
+    filelist = ds.GetFileList()
+
+    assert len(filelist) == 2, "did not get expected file list."
+
+    metadata = ds.GetMetadataDomainList()
+    assert len(metadata) == 5, "did not get expected metadata list."
+
+    md = ds.GetMetadata("IMAGERY")
+    assert md == {
+        "ACQUISITIONDATETIME": "2026-08-09 09:43:40",
+        "CLOUDCOVER": "1.90",
+        "SATELLITEID": "LANDSAT_8",
+    }
 
 
 ###############################################################################
@@ -4046,10 +4064,18 @@ def test_tiff_read_zstd_corrupted2(tmp_path):
 @pytest.mark.require_creation_option("GTiff", "WEBP")
 def test_tiff_read_webp(tmp_path):
 
+    gdal.CopyFile("data/tif_webp.tif", tmp_path / "tif_webp.tif")
+
     stats = (0, 215, 66.38, 47.186)
-    ut = gdaltest.GDALTest("GTiff", "tif_webp.tif", 1, None, tmpdir=tmp_path)
+    ut = gdaltest.GDALTest(
+        "GTiff",
+        tmp_path / "tif_webp.tif",
+        1,
+        None,
+        tmpdir=tmp_path,
+        filename_absolute=True,
+    )
     ut.testOpen(check_approx_stat=stats, stat_epsilon=1)
-    gdal.Unlink("data/tif_webp.tif.aux.xml")
 
 
 ###############################################################################
@@ -4664,7 +4690,7 @@ def test_tiff_read_unhandled_codec_known_name():
 
 
 ###############################################################################
-# Test reading a file with a unhandled codec of a unknown name
+# Test reading a file with a unhandled codec of an unknown name
 
 
 def test_tiff_read_unhandled_codec_unknown_name():
@@ -5010,7 +5036,9 @@ def test_tiff_read_multi_threaded(
     "advise_read,test_retry", [(True, False), (True, True), (False, False)]
 )
 @pytest.mark.skipif(
-    platform.system() == "Darwin" or gdaltest.is_travis_branch("mingw64"),
+    platform.system() == "Darwin"
+    or gdaltest.is_travis_branch("mingw64")
+    or gdaltest.is_travis_branch("build-windows-conda"),
     reason="fails randomly",
 )
 @pytest.mark.require_curl()

@@ -19,6 +19,12 @@ from osgeo import gdal
 pytestmark = pytest.mark.require_driver("BASISU")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def set_cpl_tmpdir(tmp_path_factory):
+    with gdaltest.set_cpl_tmpdir(tmp_path_factory, "basisu"):
+        yield
+
+
 ###############################################################################
 @pytest.fixture(autouse=True, scope="module")
 def module_disable_exceptions():

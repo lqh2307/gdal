@@ -56,7 +56,11 @@ constexpr const char *GAAC_ADVANCED = "Advanced";
 constexpr const char *GAAC_ESOTERIC = "Esoteric";
 
 /** Argument metadata item that applies to the "input-format" and
- * "output-format" argument */
+ * "output-format" argument.
+ *
+ * All the values of the list must be met by the driver. A single value may
+ * express alternatives separated by '|', of which at least one must be met,
+ * e.g. GDAL_DCAP_RASTER "|" GDAL_DCAP_MULTIDIM_RASTER. */
 constexpr const char *GAAMDI_REQUIRED_CAPABILITIES = "required_capabilities";
 
 /** Argument metadata item that applies to "output-format" argument */
@@ -561,6 +565,7 @@ class CPL_DLL GDALAlgorithmArgDecl final
     //! @cond Doxygen_Suppress
     GDALAlgorithmArgDecl &SetChoices()
     {
+        m_choicesSet = true;
         return *this;
     }
 
@@ -575,6 +580,11 @@ class CPL_DLL GDALAlgorithmArgDecl final
                                 bool>::type = true>
     GDALAlgorithmArgDecl &SetChoices(T &&first, U &&...rest)
     {
+        if (m_choicesSet)
+        {
+            m_choices.clear();
+            m_choicesSet = false;
+        }
         m_choices.push_back(std::forward<T>(first));
         SetChoices(std::forward<U>(rest)...);
         return *this;
@@ -586,6 +596,7 @@ class CPL_DLL GDALAlgorithmArgDecl final
     GDALAlgorithmArgDecl &SetChoices(const std::vector<std::string> &choices)
     {
         m_choices = choices;
+        m_choicesSet = true;
         return *this;
     }
 
@@ -650,6 +661,7 @@ class CPL_DLL GDALAlgorithmArgDecl final
     //! @cond Doxygen_Suppress
     GDALAlgorithmArgDecl &SetHiddenChoices()
     {
+        m_hiddenChoicesSet = true;
         return *this;
     }
 
@@ -661,6 +673,11 @@ class CPL_DLL GDALAlgorithmArgDecl final
     template <typename T, typename... U>
     GDALAlgorithmArgDecl &SetHiddenChoices(T &&first, U &&...rest)
     {
+        if (m_hiddenChoicesSet)
+        {
+            m_hiddenChoices.clear();
+            m_hiddenChoicesSet = false;
+        }
         m_hiddenChoices.push_back(std::forward<T>(first));
         SetHiddenChoices(std::forward<U>(rest)...);
         return *this;
@@ -1243,6 +1260,8 @@ class CPL_DLL GDALAlgorithmArgDecl final
     double m_maxVal = std::numeric_limits<double>::quiet_NaN();
     bool m_minValIsIncluded = false;
     bool m_maxValIsIncluded = false;
+    bool m_choicesSet = false;
+    bool m_hiddenChoicesSet = false;
     int m_minCharCount = 0;
     int m_maxCharCount = std::numeric_limits<int>::max();
     GDALArgDatasetType m_datasetType =
