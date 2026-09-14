@@ -3237,10 +3237,10 @@ TEST_F(test_cpl, CPLAutoClose)
 
     {
         AutoCloseTest *p1 = AutoCloseTest::Create();
-        CPL_AUTO_CLOSE_WARP(p1, AutoCloseTest::Destroy);
+        CPL_AUTO_CLOSE_WRAP(p1, AutoCloseTest::Destroy);
 
         AutoCloseTest *p2 = AutoCloseTest::Create();
-        CPL_AUTO_CLOSE_WARP(p2, AutoCloseTest::Destroy);
+        CPL_AUTO_CLOSE_WRAP(p2, AutoCloseTest::Destroy);
     }
     ASSERT_EQ(counter, 400);
 }

@@ -147,7 +147,7 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "CPL_VSIL_CURL_MAX_RANGES", // from cpl_vsil_curl.cpp
    "CPL_VSIL_CURL_NON_CACHED", // from cpl_vsil_curl.cpp
    "CPL_VSIL_CURL_SLOW_GET_SIZE", // from cpl_vsil_curl.cpp, cpl_vsil_curl_streaming.cpp
-   "CPL_VSIL_CURL_STREMAING_SIMULATED_CURL_ERROR", // from cpl_vsil_curl_streaming.cpp
+   "CPL_VSIL_CURL_STREAMING_SIMULATED_CURL_ERROR", // from cpl_vsil_curl_streaming.cpp
    "CPL_VSIL_CURL_USE_HEAD", // from cpl_vsil_curl.cpp
    "CPL_VSIL_CURL_USE_S3_REDIRECT", // from cpl_vsil_curl.cpp
    "CPL_VSIL_DEFLATE_CHUNK_SIZE", // from cpl_minizip_zip.cpp, cpl_vsil_gzip.cpp
@@ -491,7 +491,7 @@ constexpr static const char* const apszKnownConfigOptions[] =
    "GMLAS_XML_MAX_LEVEL", // from ogrgmlasreader.cpp
    "GMLJP2OVERRIDE", // from gdaljp2metadata.cpp, jp2opjlikedataset.cpp
    "GMT_USE_TAB", // from ogrgmtlayer.cpp
-   "GO2A_AUD", // from cpl_google_oauth2.cpp
+   "GOA2_AUD", // from cpl_google_oauth2.cpp
    "GOA2_AUTH_URL_TOKEN", // from cpl_google_oauth2.cpp
    "GOA2_CLIENT_ID", // from cpl_google_oauth2.cpp
    "GOA2_CLIENT_SECRET", // from cpl_google_oauth2.cpp
