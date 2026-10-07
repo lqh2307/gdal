@@ -37,11 +37,6 @@ def startup_and_cleanup():
 
     gdaltest.gpkg_dr = ogr.GetDriverByName("GPKG")
 
-    try:
-        os.remove("tmp/gpkg_test.gpkg")
-    except OSError:
-        pass
-
     # This is to speed-up the runtime of tests on EXT4 filesystems
     # Do not use this for production environment if you care about data safety
     # w.r.t system/OS crashes, unless you know what you are doing.
@@ -52,11 +47,6 @@ def startup_and_cleanup():
         print(gdal.ReadDir("/vsimem"))
         for f in gdal.ReadDir("/vsimem"):
             gdal.Unlink("/vsimem/" + f)
-
-    try:
-        os.remove("tmp/gpkg_test.gpkg")
-    except OSError:
-        pass
 
 
 ###############################################################################
@@ -4923,7 +4913,7 @@ def test_ogr_gpkg_48(tmp_vsimem):
 
 
 ###############################################################################
-# Test CreateGeomField() on a attributes layer
+# Test CreateGeomField() on an attributes layer
 
 
 def test_ogr_gpkg_49(tmp_vsimem):
@@ -5445,6 +5435,35 @@ def test_ogr_gpkg_savepoint(tmp_vsimem):
     lyr = ds.GetLayer(0)
     assert lyr.GetFeatureCount() == 2
     ds = None
+
+
+###############################################################################
+# Test SAVEPOINTS are erased after a COMMIT (issue GH #15294)
+
+
+def test_ogr_gpkg_savepoint_erased_after_commit(tmp_vsimem):
+    filename = tmp_vsimem / "ogr_gpkg_savepoint_erased_after_commit.gpkg"
+    ds = gdaltest.gpkg_dr.CreateDataSource(filename)
+    lyr = ds.CreateLayer("foo")
+    lyr.CreateField(ogr.FieldDefn("str", ogr.OFTString))
+    f = ogr.Feature(lyr.GetLayerDefn())
+    f["str"] = "foo"
+    lyr.CreateFeature(f)
+    ds = None
+
+    ds = ogr.Open(filename, update=1)
+    ds.ExecuteSQL("BEGIN")
+    ds.ExecuteSQL("SAVEPOINT pt")
+    # Modify the feature
+    lyr = ds.GetLayer(0)
+    f = lyr.GetNextFeature()
+    f["str"] = "bar"
+    lyr.SetFeature(f)
+    ds.ExecuteSQL("COMMIT")
+    ds.ExecuteSQL("BEGIN")
+    # This raised a runtime error before the patch that fixed GH #15294
+    # RuntimeError: sqlite3_exec(ROLLBACK TO SAVEPOINT pt) failed: no such savepoint: pt
+    ds.ExecuteSQL("ROLLBACK")
 
 
 ###############################################################################
